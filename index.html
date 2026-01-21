@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Tracker Pro - Sync Edition</title>
+    <title>Study Tracker Pro - Ultimate Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -39,11 +39,20 @@
                     </div>
                 </div>
                 <div class="flex gap-2 flex-wrap">
-                    <button onclick="openSyncModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg flex items-center gap-2">
+                    <!-- 新規：同期ボタン -->
+                    <button onclick="window.openSyncModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                        同期設定
+                        スマホ同期
                     </button>
-                    <button onclick="exportAsHtml()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg">HTML保存</button>
+                    <!-- 既存：JSON機能 -->
+                    <div class="flex bg-slate-100 p-1 rounded-xl">
+                        <button onclick="window.exportJSON()" class="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600">JSON書出</button>
+                        <label class="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600 cursor-pointer">
+                            JSON読込
+                            <input type="file" accept=".json" onchange="window.importJSON(event)" class="hidden">
+                        </label>
+                    </div>
+                    <button onclick="window.exportAsHtml()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg">HTML保存</button>
                 </div>
             </div>
 
@@ -55,7 +64,7 @@
                             <input type="number" id="timer-minutes-input" value="25" min="1" class="w-12 bg-transparent text-lg font-bold text-slate-700 outline-none text-center">
                             <span class="text-slate-300 font-bold">:</span>
                             <span id="global-countdown" class="font-mono text-xl font-bold text-slate-700 w-8 text-center">00</span>
-                            <button onclick="toggleGlobalTimer()" id="timer-btn" class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg btn-hover ml-1">
+                            <button onclick="window.toggleGlobalTimer()" id="timer-btn" class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg btn-hover ml-1">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>
                             </button>
                         </div>
@@ -75,7 +84,7 @@
                 <section class="glass-card p-4 md:p-6">
                     <div class="flex gap-2 mb-6">
                         <input type="text" id="task-title" placeholder="新しいタスク名..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500/20">
-                        <button onclick="addNewTask()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-sm shadow-md btn-hover">追加</button>
+                        <button onclick="window.addNewTask()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-sm shadow-md btn-hover">追加</button>
                     </div>
                     <div id="task-list" class="space-y-3"></div>
                 </section>
@@ -86,7 +95,7 @@
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">1週間の達成度</h3>
                     <div class="relative w-28 h-28">
                         <canvas id="weeklyProgressChart"></canvas>
-                        <div id="weekly-percentage-label" class="absolute inset-0 flex items-center justify-center">
+                        <div id="weekly-percentage-label" class="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <span class="text-lg font-black text-indigo-600">0%</span>
                         </div>
                     </div>
@@ -95,7 +104,7 @@
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">本日の進捗状況</h3>
                     <div class="relative w-28 h-28">
                         <canvas id="todayProgressChart"></canvas>
-                        <div id="percentage-label" class="absolute inset-0 flex items-center justify-center">
+                        <div id="percentage-label" class="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <span class="text-lg font-black text-slate-800">0%</span>
                         </div>
                     </div>
@@ -149,30 +158,30 @@
             </div>
             
             <div id="qr-container" class="flex flex-col items-center bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-200">
-                <div id="qrcode" class="bg-white p-2 rounded-xl shadow-inner mb-4"></div>
-                <p class="text-[10px] text-slate-400 font-bold uppercase">このQRをスマホでスキャン</p>
+                <div id="qrcode" class="bg-white p-2 rounded-xl shadow-inner mb-4 min-h-[140px] flex items-center justify-center"></div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase text-center">このQRをスマホでスキャンすると<br>共有キーが自動で入ります</p>
             </div>
 
             <div class="space-y-4">
                 <div>
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">共有キー（パスワード）</label>
                     <div class="flex gap-2">
-                        <input type="text" id="sync-key" class="flex-1 font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-500/10" placeholder="任意の文字列">
-                        <button onclick="generateRandomKey()" class="bg-slate-100 p-3 rounded-xl hover:bg-slate-200">🎲</button>
+                        <input type="text" id="sync-key" class="flex-1 font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-500/10 uppercase" placeholder="合言葉を決める">
+                        <button onclick="window.generateRandomKey()" class="bg-slate-100 p-3 rounded-xl hover:bg-slate-200">🎲</button>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="uploadToCloud()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-500/20 btn-hover text-sm">クラウドへ保存</button>
-                    <button onclick="downloadFromCloud()" class="bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg btn-hover text-sm">読込（同期）</button>
+                    <button id="cloud-upload-btn" onclick="window.uploadToCloud()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-500/20 btn-hover text-sm">クラウドへ保存</button>
+                    <button id="cloud-download-btn" onclick="window.downloadFromCloud()" class="bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg btn-hover text-sm">読込（同期）</button>
                 </div>
             </div>
             
-            <button onclick="closeSyncModal()" class="w-full text-slate-400 font-bold py-2 text-sm">閉じる</button>
+            <button onclick="window.closeSyncModal()" class="w-full text-slate-400 font-bold py-2 text-sm">閉じる</button>
         </div>
     </div>
 
-    <!-- Edit Modal (Legacy) -->
+    <!-- Edit Modal -->
     <div id="manual-time-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay hidden px-4">
         <div class="bg-white w-full max-w-sm p-6 rounded-3xl shadow-2xl space-y-6">
             <div class="flex justify-between items-center">
@@ -184,8 +193,8 @@
                 <input type="number" id="manual-minutes" min="0" class="w-full text-3xl font-mono font-bold bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-500/10">
             </div>
             <div class="flex gap-3 pt-2">
-                <button onclick="closeManualModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl btn-hover">戻る</button>
-                <button onclick="saveManualTime()" class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-lg shadow-indigo-500/30 btn-hover">保存</button>
+                <button onclick="window.closeManualModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl btn-hover">戻る</button>
+                <button onclick="window.saveManualTime()" class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-lg shadow-indigo-500/30 btn-hover">保存</button>
             </div>
         </div>
     </div>
@@ -195,29 +204,18 @@
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Global Firebase Config (Environment variables)
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'study-tracker-v5';
 
-        // --- State Management ---
         const STORAGE_KEY = 'learning_tracker_final_v5';
         let currentDate = new Date().toLocaleDateString('sv-SE');
         const taskColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#475569'];
 
-        const getInitialHistory = () => {
-            let localData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-            try {
-                const embedded = JSON.parse(document.getElementById('embedded-data').textContent || "{}");
-                Object.keys(embedded).forEach(d => { if(!localData[d]) localData[d] = embedded[d]; });
-            } catch(e) {}
-            return localData;
-        };
-
         let state = {
-            history: getInitialHistory(),
+            history: JSON.parse(localStorage.getItem(STORAGE_KEY)) || {},
             activeTaskId: null,
             editingTaskId: null,
             user: null
@@ -226,128 +224,132 @@
         let charts = {};
         let timerInterval, timeLeft = 25 * 60, isTimerRunning = false;
 
-        // --- Core Functions ---
-        window.initApp = async () => {
+        const initApp = async () => {
             await signInAnonymously(auth);
             onAuthStateChanged(auth, (user) => { state.user = user; });
 
             const picker = document.getElementById('date-picker');
             picker.value = currentDate;
             picker.addEventListener('change', (e) => {
-                stopTimer();
+                window.stopTimer();
                 currentDate = e.target.value;
-                initDayData();
-                refreshUI();
+                window.initDayData();
+                window.refreshUI();
             });
 
-            // Check if URL has a sync key
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('key')) {
-                document.getElementById('sync-key').value = urlParams.get('key');
-                openSyncModal();
+                document.getElementById('sync-key').value = urlParams.get('key').toUpperCase();
+                window.openSyncModal();
             }
 
-            initDayData();
-            refreshUI();
+            window.initDayData();
+            window.refreshUI();
             setInterval(() => {
                 const total = (state.history[currentDate] || []).reduce((a, t) => a + (t.seconds || 0), 0);
-                document.getElementById('global-stopwatch').innerText = formatTime(total);
+                document.getElementById('global-stopwatch').innerText = window.formatTime(total);
             }, 1000);
         };
 
+        // --- EXPORT/IMPORT (JSON) ---
+        window.exportJSON = () => {
+            const data = { history: state.history, savedAt: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `study-tracker-${currentDate}.json`;
+            a.click();
+        };
+
+        window.importJSON = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const parsed = JSON.parse(reader.result);
+                    if (!parsed.history) throw new Error();
+                    state.history = parsed.history;
+                    window.saveToLocal();
+                    window.refreshUI();
+                    alert("JSONデータを読み込みました");
+                } catch {
+                    alert("読み込みに失敗しました（形式が正しくありません）");
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        // --- CLOUD SYNC METHODS ---
+        window.openSyncModal = () => {
+            document.getElementById('sync-modal').classList.remove('hidden');
+            window.updateQRCode();
+        };
+        window.closeSyncModal = () => document.getElementById('sync-modal').classList.add('hidden');
+        window.generateRandomKey = () => {
+            document.getElementById('sync-key').value = Math.random().toString(36).substring(2, 8).toUpperCase();
+            window.updateQRCode();
+        };
+        window.updateQRCode = () => {
+            const key = document.getElementById('sync-key').value.trim();
+            const container = document.getElementById('qrcode');
+            container.innerHTML = '';
+            if (!key) return;
+            const url = new URL(window.location.href.split('?')[0]);
+            url.searchParams.set('key', key);
+            const qr = qrcode(0, 'M');
+            qr.addData(url.toString());
+            qr.make();
+            container.innerHTML = qr.createImgTag(4);
+        };
+        window.uploadToCloud = async () => {
+            const key = document.getElementById('sync-key').value.trim().toUpperCase();
+            if (!key || !state.user) return alert("共有キーを入力してください");
+            const btn = document.getElementById('cloud-upload-btn');
+            btn.disabled = true; btn.innerText = "保存中...";
+            try {
+                const syncDoc = doc(db, 'artifacts', appId, 'public', 'data', key);
+                await setDoc(syncDoc, { history: state.history, updatedAt: new Date().toISOString() });
+                alert("クラウドに保存しました！");
+            } catch (e) { alert("エラー: " + e.message); }
+            finally { btn.disabled = false; btn.innerText = "クラウドへ保存"; }
+        };
+        window.downloadFromCloud = async () => {
+            const key = document.getElementById('sync-key').value.trim().toUpperCase();
+            if (!key || !state.user) return alert("共有キーを入力してください");
+            const btn = document.getElementById('cloud-download-btn');
+            btn.disabled = true; btn.innerText = "読込中...";
+            try {
+                const syncDoc = doc(db, 'artifacts', appId, 'public', 'data', key);
+                const snap = await getDoc(syncDoc);
+                if (snap.exists()) {
+                    state.history = snap.data().history;
+                    window.saveToLocal();
+                    window.refreshUI();
+                    alert("同期が完了しました！");
+                    window.closeSyncModal();
+                } else { alert("データが見つかりません。"); }
+            } catch (e) { alert("エラー: " + e.message); }
+            finally { btn.disabled = false; btn.innerText = "読込（同期）"; }
+        };
+
+        // --- CORE LOGIC ---
         window.initDayData = () => {
             if (!state.history[currentDate]) {
                 const dates = Object.keys(state.history).sort();
                 const lastDate = dates.filter(d => d < currentDate).pop();
                 state.history[currentDate] = lastDate ? 
                     state.history[lastDate].map(t => ({ title: t.title, seconds: 0, completed: false })) : [];
-                saveToLocal();
+                window.saveToLocal();
             }
         };
-
         window.saveToLocal = () => { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history)); };
-
         window.refreshUI = () => {
-            renderTasks();
-            updateCharts();
-            renderAnalysis();
+            window.renderTasks();
+            window.updateCharts();
+            window.renderAnalysis();
             document.getElementById('date-display').innerText = currentDate;
         };
-
-        // --- Sync & Cloud Logic ---
-        window.openSyncModal = () => {
-            document.getElementById('sync-modal').classList.remove('hidden');
-            updateQRCode();
-        };
-        window.closeSyncModal = () => document.getElementById('sync-modal').classList.add('hidden');
-        
-        window.generateRandomKey = () => {
-            const key = Math.random().toString(36).substring(2, 8).toUpperCase();
-            document.getElementById('sync-key').value = key;
-            updateQRCode();
-        };
-
-        window.updateQRCode = () => {
-            const key = document.getElementById('sync-key').value;
-            const container = document.getElementById('qrcode');
-            container.innerHTML = '';
-            if (!key) return;
-            
-            const url = new URL(window.location.href);
-            url.searchParams.set('key', key);
-            
-            const qr = qrcode(0, 'M');
-            qr.addData(url.toString());
-            qr.make();
-            container.innerHTML = qr.createImgTag(5);
-        };
-
-        window.uploadToCloud = async () => {
-            const key = document.getElementById('sync-key').value;
-            if (!key || !state.user) return alert("共有キーを入力してください");
-            
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "保存中...";
-            
-            try {
-                // RULE 1: Specific path for public data
-                const syncDoc = doc(db, 'artifacts', appId, 'public', 'data', key);
-                await setDoc(syncDoc, { 
-                    history: state.history, 
-                    updatedAt: new Date().toISOString() 
-                });
-                alert("クラウドに保存しました。このキーで他デバイスから同期できます。");
-            } catch (e) {
-                alert("保存エラー: " + e.message);
-            } finally {
-                btn.innerText = originalText;
-                updateQRCode();
-            }
-        };
-
-        window.downloadFromCloud = async () => {
-            const key = document.getElementById('sync-key').value;
-            if (!key || !state.user) return alert("共有キーを入力してください");
-            
-            try {
-                const syncDoc = doc(db, 'artifacts', appId, 'public', 'data', key);
-                const snap = await getDoc(syncDoc);
-                if (snap.exists()) {
-                    state.history = snap.data().history;
-                    saveToLocal();
-                    refreshUI();
-                    alert("同期が完了しました！");
-                    closeSyncModal();
-                } else {
-                    alert("データが見つかりません。キーが正しいか確認してください。");
-                }
-            } catch (e) {
-                alert("同期エラー: " + e.message);
-            }
-        };
-
-        // --- Task & UI Logic (Keeping everything same) ---
         window.addNewTask = () => {
             const input = document.getElementById('task-title');
             const title = input.value.trim();
@@ -357,22 +359,17 @@
                     state.history[d].push({ title, seconds: 0, completed: false });
                 }
             });
-            input.value = ''; saveToLocal(); refreshUI();
+            input.value = ''; window.saveToLocal(); window.refreshUI();
         };
-
         window.deleteTask = (title) => {
-            Object.keys(state.history).forEach(d => {
-                if (d >= currentDate) state.history[d] = state.history[d].filter(t => t.title !== title);
-            });
-            if (state.activeTaskId === title) stopTimer();
-            saveToLocal(); refreshUI();
+            Object.keys(state.history).forEach(d => { if (d >= currentDate) state.history[d] = state.history[d].filter(t => t.title !== title); });
+            if (state.activeTaskId === title) window.stopTimer();
+            window.saveToLocal(); window.refreshUI();
         };
-
         window.toggleTask = (title) => {
             state.history[currentDate] = state.history[currentDate].map(t => t.title === title ? {...t, completed: !t.completed} : t);
-            saveToLocal(); refreshUI();
+            window.saveToLocal(); window.refreshUI();
         };
-
         window.renderTasks = () => {
             const list = document.getElementById('task-list');
             list.innerHTML = '';
@@ -380,25 +377,23 @@
                 const isActive = state.activeTaskId === task.title;
                 const div = document.createElement('div');
                 div.className = `flex items-center gap-2 p-3 rounded-2xl border transition-all ${isActive ? 'active-timer shadow-md' : 'bg-white border-slate-200'} ${task.completed ? 'opacity-50' : ''}`;
-                div.dataset.title = task.title;
                 div.innerHTML = `
                     <div class="drag-handle text-slate-300 cursor-grab px-1">⋮⋮</div>
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.title}')" class="w-5 h-5 accent-indigo-600 rounded-lg">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="window.toggleTask('${task.title}')" class="w-5 h-5 accent-indigo-600 rounded-lg">
                     <div class="flex-1 truncate font-bold text-slate-700 text-sm ${task.completed ? 'line-through opacity-50' : ''}">${task.title}</div>
-                    <div class="font-mono text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md">${formatTime(task.seconds)}</div>
+                    <div class="font-mono text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md">${window.formatTime(task.seconds)}</div>
                     <div class="flex items-center gap-1">
-                        <button onclick="openManualModal('${task.title}')" class="p-2 text-slate-400 hover:text-indigo-600">✎</button>
-                        <button onclick="state.activeTaskId='${task.title}'; refreshUI();" class="p-2 ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} rounded-lg shadow-sm">
+                        <button onclick="window.openManualModal('${task.title}')" class="p-2 text-slate-400 hover:text-indigo-600">✎</button>
+                        <button onclick="window.setActiveTask('${task.title}')" class="p-2 ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} rounded-lg shadow-sm">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>
                         </button>
-                        <button onclick="deleteTask('${task.title}')" class="p-2 text-slate-300 hover:text-rose-500">✕</button>
+                        <button onclick="window.deleteTask('${task.title}')" class="p-2 text-slate-300 hover:text-rose-500">✕</button>
                     </div>
                 `;
                 list.appendChild(div);
             });
-            new Sortable(list, { animation: 200, handle: '.drag-handle' });
         };
-
+        window.setActiveTask = (title) => { state.activeTaskId = title; window.refreshUI(); };
         window.openManualModal = (title) => {
             state.editingTaskId = title;
             document.getElementById('editing-task-name').innerText = title;
@@ -410,30 +405,30 @@
         window.saveManualTime = () => {
             const mins = parseInt(document.getElementById('manual-minutes').value) || 0;
             state.history[currentDate] = state.history[currentDate].map(t => t.title === state.editingTaskId ? {...t, seconds: mins * 60} : t);
-            saveToLocal(); refreshUI(); closeManualModal();
+            window.saveToLocal(); window.refreshUI(); window.closeManualModal();
         };
-
-        window.toggleGlobalTimer = () => { if (!state.activeTaskId) return; isTimerRunning ? stopTimer() : startTimer(); };
+        window.toggleGlobalTimer = () => { if (!state.activeTaskId) return; isTimerRunning ? window.stopTimer() : window.startTimer(); };
         window.startTimer = () => {
+            if (isTimerRunning) return;
             const input = document.getElementById('timer-minutes-input');
-            if (!isTimerRunning && timeLeft === 25 * 60) timeLeft = (parseInt(input.value) || 25) * 60;
+            if (timeLeft === 25 * 60) timeLeft = (parseInt(input.value) || 25) * 60;
             isTimerRunning = true;
             timerInterval = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
                     const task = (state.history[currentDate] || []).find(t => t.title === state.activeTaskId);
                     if (task) task.seconds++;
-                    saveToLocal(); updateTimerUI();
-                } else { stopTimer(); }
+                    window.updateTimerUI();
+                } else { window.stopTimer(); }
             }, 1000);
-            updateTimerButton();
+            window.updateTimerButton();
         };
-        window.stopTimer = () => { clearInterval(timerInterval); isTimerRunning = false; updateTimerButton(); };
+        window.stopTimer = () => { clearInterval(timerInterval); isTimerRunning = false; window.updateTimerButton(); window.saveToLocal(); };
         window.updateTimerUI = () => { 
             const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
             document.getElementById('timer-minutes-input').value = m;
             document.getElementById('global-countdown').innerText = String(s).padStart(2, '0');
-            refreshUI();
+            window.refreshUI();
         };
         window.updateTimerButton = () => {
             const btn = document.getElementById('timer-btn');
@@ -443,32 +438,26 @@
             const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
             return [h, m, s].map(v => String(v).padStart(2, '0')).join(":");
         };
-
         window.updateCharts = () => {
             const tasks = state.history[currentDate] || [];
             const done = tasks.filter(t => t.completed).length, total = tasks.length || 1;
             const pct = Math.round((done / total) * 100);
             document.querySelector('#percentage-label span').innerText = `${pct}%`;
-            initChart('todayProgressChart', 'doughnut', [done, total - done], ['#4f46e5', '#f1f5f9']);
-            
+            window.initChart('todayProgressChart', 'doughnut', [done, total - done], ['#4f46e5', '#f1f5f9']);
             const days = [];
             for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d.toLocaleDateString('sv-SE')); }
             let weekDone = 0, weekTotal = 0;
             days.forEach(d => { const dayTasks = state.history[d] || []; weekDone += dayTasks.filter(t => t.completed).length; weekTotal += dayTasks.length; });
             const weekPct = weekTotal === 0 ? 0 : Math.round((weekDone / weekTotal) * 100);
             document.querySelector('#weekly-percentage-label span').innerText = `${weekPct}%`;
-            initChart('weeklyProgressChart', 'doughnut', [weekDone, weekTotal - weekDone || 1], ['#6366f1', '#f1f5f9']);
-
+            window.initChart('weeklyProgressChart', 'doughnut', [weekDone, weekTotal - weekDone || 1], ['#6366f1', '#f1f5f9']);
             const tasksWithTime = tasks.filter(t => t.seconds > 0);
             if(tasksWithTime.length > 0) {
-                const colors = tasksWithTime.map((t, i) => taskColors[i % taskColors.length]);
-                initChart('pieChart', 'pie', tasksWithTime.map(t => t.seconds), colors, tasksWithTime.map(t => t.title));
-            } else { initChart('pieChart', 'pie', [1], ['#f1f5f9'], ['データなし']); }
-            
+                window.initChart('pieChart', 'pie', tasksWithTime.map(t => t.seconds), tasksWithTime.map((_, i) => taskColors[i % taskColors.length]), tasksWithTime.map(t => t.title));
+            } else { window.initChart('pieChart', 'pie', [1], ['#f1f5f9'], ['データなし']); }
             const barData = days.map(d => (state.history[d] || []).reduce((a, b) => a + (b.seconds || 0), 0) / 3600);
-            initChart('weeklyChart', 'bar', barData, '#6366f1', days.map(d => d.slice(5)));
+            window.initChart('weeklyChart', 'bar', barData, '#6366f1', days.map(d => d.slice(5)));
         };
-
         window.initChart = (id, type, data, colors, labels = []) => {
             if (charts[id]) {
                 charts[id].data.datasets[0].data = data;
@@ -476,13 +465,14 @@
                 charts[id].data.labels = labels;
                 charts[id].update();
             } else {
-                charts[id] = new Chart(document.getElementById(id), {
+                const canvas = document.getElementById(id);
+                if (!canvas) return;
+                charts[id] = new Chart(canvas, {
                     type, data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, borderRadius: type === 'bar' ? 6 : 0 }] },
                     options: { maintainAspectRatio: false, plugins: { legend: { display: type === 'pie', position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, scales: type === 'bar' ? { y: { beginAtZero: true } } : {} }
                 });
             }
         };
-
         window.renderAnalysis = () => {
             const agg = {};
             Object.values(state.history).forEach(day => {
@@ -493,21 +483,19 @@
             Object.entries(agg).sort((a,b) => b[1].s - a[1].s).forEach(([title, d]) => {
                 const pct = Math.round((d.c / d.a) * 100);
                 let status = pct >= 80 ? { t: 'マスター', c: 'bg-emerald-100 text-emerald-700' } : (pct < 40 ? { t: '要改善', c: 'bg-rose-100 text-rose-700' } : { t: '継続中', c: 'bg-amber-100 text-amber-700' });
-                table.innerHTML += `<tr><td class="px-6 py-4 font-bold text-slate-700">${title}</td><td class="px-6 py-4 font-mono font-bold text-indigo-500">${formatTime(d.s)}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><div class="w-16 h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:${pct}%"></div></div><span class="text-[10px] font-black text-slate-400">${pct}%</span></div></td><td class="px-6 py-4"><span class="${status.c} px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">${status.t}</span></td></tr>`;
+                table.innerHTML += `<tr><td class="px-6 py-4 font-bold text-slate-700">${title}</td><td class="px-6 py-4 font-mono font-bold text-indigo-500">${window.formatTime(d.s)}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><div class="w-16 h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-indigo-50" style="width:${pct}%"><div class="h-full bg-indigo-500"></div></div></div><span class="text-[10px] font-black text-slate-400">${pct}%</span></div></td><td class="px-6 py-4"><span class="${status.c} px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">${status.t}</span></td></tr>`;
             });
         };
-
         window.exportAsHtml = () => {
             const data = localStorage.getItem(STORAGE_KEY) || "{}";
             const docClone = new DOMParser().parseFromString(document.documentElement.outerHTML, 'text/html');
             docClone.getElementById('embedded-data').textContent = data;
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob(["<!DOCTYPE html>\n" + docClone.documentElement.outerHTML], { type: 'text/html' }));
-            a.download = `StudyTracker_Sync_${currentDate}.html`;
+            a.download = `StudyTracker_Final_${currentDate}.html`;
             a.click();
         };
 
-        // Start initialization
         initApp();
     </script>
 </body>
