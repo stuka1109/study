@@ -52,12 +52,12 @@
                     <div class="flex flex-col items-center">
                         <span class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">カウントダウン</span>
                         <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100">
-                            <!-- 分の選択 (0-60) -->
+                            <!-- 分の選択 (0-60, 5分刻み) -->
                             <select id="timer-minutes-input" class="custom-select bg-transparent text-lg font-bold text-slate-700 outline-none text-center cursor-pointer">
                                 <!-- JSでオプションを生成 -->
                             </select>
                             <span class="text-slate-300 font-bold">:</span>
-                            <!-- 秒の選択 (00, 10, 20, 30, 40, 50) -->
+                            <!-- 秒の選択 (00-50, 10秒刻み) -->
                             <select id="timer-seconds-input" class="custom-select bg-transparent text-lg font-bold text-slate-700 outline-none text-center cursor-pointer">
                                 <!-- JSでオプションを生成 -->
                             </select>
@@ -198,9 +198,9 @@
         let timerInterval, timeLeft = 25 * 60, isTimerRunning = false;
 
         window.onload = () => {
-            // 分のセレクトボックス生成 (0-60)
+            // 分のセレクトボックス生成 (0-60, 5分刻み)
             const minSelect = document.getElementById('timer-minutes-input');
-            for (let i = 0; i <= 60; i++) {
+            for (let i = 0; i <= 60; i += 5) {
                 const opt = document.createElement('option');
                 opt.value = i;
                 opt.textContent = String(i).padStart(2, '0');
@@ -208,7 +208,7 @@
                 minSelect.appendChild(opt);
             }
 
-            // 秒のセレクトボックス生成 (00, 10, 20, 30, 40, 50)
+            // 秒のセレクトボックス生成 (00-50, 10秒刻み)
             const secSelect = document.getElementById('timer-seconds-input');
             for (let i = 0; i < 60; i += 10) {
                 const opt = document.createElement('option');
@@ -233,7 +233,6 @@
                 if (e.key === 'Enter') addNewTask();
             });
 
-            // セレクトボックス変更時にタイマー時間を更新
             const updateTimeFromSelect = () => {
                 if (!isTimerRunning) {
                     const m = parseInt(minSelect.value) || 0;
@@ -393,22 +392,24 @@
         }
         function updateTimerUI() { 
             const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
-            
-            // 選択肢に秒数が存在する場合のみ反映（タイマー進行中などの端数対策）
             const minInput = document.getElementById('timer-minutes-input');
             const secInput = document.getElementById('timer-seconds-input');
             
-            minInput.value = m;
+            // 表示用のヘルパー：現在の値がセレクトボックスに存在するか確認し、なければ一時的に追加
+            const ensureOption = (select, val) => {
+                let exists = Array.from(select.options).some(o => parseInt(o.value) === val);
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = String(val).padStart(2, '0');
+                    select.appendChild(opt);
+                }
+                select.value = val;
+            };
+
+            ensureOption(minInput, m);
+            ensureOption(secInput, s);
             
-            // 10秒ステップに存在しない値の場合は、最も近い値を選択するかそのままにする
-            // ここではタイマーUIが「表示」としての役割を果たすようセットします。
-            const options = Array.from(secInput.options).map(o => parseInt(o.value));
-            if (options.includes(s)) {
-                secInput.value = s;
-            } else if (s < 0) {
-                secInput.value = 0;
-            }
-            // タイマー進行中はセレクトボックスの値が秒と一致しない場合があるがロジックはtimeLeftで管理
             refreshUI();
         }
         function updateTimerButton() {
