@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Tracker Pro - Ultimate Sync</title>
+    <title>Study Tracker Pro - Visualized</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap');
         body { font-family: 'Inter', 'Noto Sans JP', sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
@@ -17,6 +17,8 @@
         .active-timer { border: 2px solid #6366f1; background: #f5f7ff; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); } 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); } }
         .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .custom-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.2rem center; background-size: 0.8em; padding-right: 1.1rem; }
     </style>
 </head>
 <body class="p-3 md:p-8 min-h-screen">
@@ -29,25 +31,18 @@
             <div class="flex flex-wrap justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="bg-indigo-600 p-2 md:p-3 rounded-xl shadow-lg">
-                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-4.5 1.253"></path></svg>
+                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
                     <div>
-                        <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Study Tracker Pro</h1>
+                        <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight text-shadow-sm">Study Tracker Pro</h1>
                         <p id="date-display" class="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-wider font-mono"></p>
                     </div>
                 </div>
-                <div class="flex gap-2 flex-wrap items-center">
-                    <div class="flex bg-slate-100 p-1 rounded-xl mr-2">
-                        <button onclick="exportJSON()" class="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600">JSON書出</button>
-                        <label class="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600 cursor-pointer">
-                            JSON読込
-                            <input type="file" accept=".json" onchange="importJSON(event)" class="hidden">
-                        </label>
-                    </div>
-                    <button onclick="openSyncModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                        スマホ同期
-                    </button>
+                <div class="flex gap-2">
+                    <label class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold btn-hover cursor-pointer shadow-sm border border-slate-200">
+                        JSON読込 <input type="file" class="hidden" onchange="importJSON(event)">
+                    </label>
+                    <button onclick="exportJSON()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg">JSON保存</button>
                     <button onclick="exportAsHtml()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg">HTML保存</button>
                 </div>
             </div>
@@ -56,46 +51,65 @@
                 <div class="flex flex-1 justify-around w-full items-center">
                     <div class="flex flex-col items-center">
                         <span class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">カウントダウン</span>
-                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100">
-                            <input type="number" id="timer-minutes-input" value="25" min="1" class="w-12 bg-transparent text-lg font-bold text-slate-700 outline-none text-center">
+                        <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100">
+                            <!-- 分の選択 (0-60) -->
+                            <select id="timer-minutes-input" class="custom-select bg-transparent text-lg font-bold text-slate-700 outline-none text-center cursor-pointer">
+                                <!-- JSでオプションを生成 -->
+                            </select>
                             <span class="text-slate-300 font-bold">:</span>
-                            <span id="global-countdown" class="font-mono text-xl font-bold text-slate-700 w-8 text-center">00</span>
+                            <!-- 秒の選択 (00, 10, 20, 30, 40, 50) -->
+                            <select id="timer-seconds-input" class="custom-select bg-transparent text-lg font-bold text-slate-700 outline-none text-center cursor-pointer">
+                                <!-- JSでオプションを生成 -->
+                            </select>
                             <button onclick="toggleGlobalTimer()" id="timer-btn" class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg btn-hover ml-1">
-                                <svg id="timer-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>
                             </button>
                         </div>
                     </div>
                     <div class="w-px h-10 bg-slate-200 mx-2"></div>
                     <div class="flex flex-col items-center">
                         <span class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">本日の合計学習</span>
-                        <div id="global-stopwatch" class="font-mono text-xl md:text-2xl font-black text-indigo-600">00:00:00</div>
+                        <div id="global-stopwatch" class="font-mono text-xl md:text-2xl font-black text-indigo-600 drop-shadow-sm">00:00:00</div>
                     </div>
                 </div>
-                <input type="date" id="date-picker" class="w-full sm:w-auto border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold outline-none bg-white">
+                <input type="date" id="date-picker" class="w-full sm:w-auto border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold outline-none bg-white focus:ring-2 focus:ring-indigo-500/20">
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left: Task Control -->
             <div class="lg:col-span-7 space-y-4">
                 <section class="glass-card p-4 md:p-6">
                     <div class="flex gap-2 mb-6">
-                        <input type="text" id="task-title" placeholder="新しいタスク名..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none">
+                        <input type="text" id="task-title" placeholder="新しいタスク名..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500/20">
                         <button onclick="addNewTask()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-sm shadow-md btn-hover">追加</button>
                     </div>
                     <div id="task-list" class="space-y-3"></div>
                 </section>
             </div>
 
+            <!-- Right: Visualizer -->
             <div class="lg:col-span-5 flex flex-col gap-4">
-                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] relative">
+                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">1週間の達成度</h3>
+                    <div class="relative w-28 h-28">
+                        <canvas id="weeklyProgressChart"></canvas>
+                        <div id="weekly-percentage-label" class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-lg font-black text-indigo-600">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">本日の進捗状況</h3>
                     <div class="relative w-28 h-28">
                         <canvas id="todayProgressChart"></canvas>
-                        <div id="percentage-label" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div id="percentage-label" class="absolute inset-0 flex items-center justify-center">
                             <span class="text-lg font-black text-slate-800">0%</span>
                         </div>
                     </div>
                 </div>
+
                 <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px]">
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">学習時間配分</h3>
                     <div class="relative w-full h-28">
@@ -105,338 +119,422 @@
             </div>
         </div>
 
-        <section class="glass-card p-4 md:p-6">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">週間学習ログ</h3>
-            <div class="h-48 md:h-64">
-                <canvas id="weeklyChart"></canvas>
-            </div>
-        </section>
-
-        <section class="glass-card overflow-hidden">
-            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="text-[10px] font-black text-slate-700 uppercase tracking-widest">累計学習分析</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left min-w-[600px]">
-                    <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase">
-                        <tr><th class="px-6 py-4">学習項目</th><th class="px-6 py-4">累計時間</th><th class="px-6 py-4">達成度</th><th class="px-6 py-4">評価</th></tr>
-                    </thead>
-                    <tbody id="analysis-table" class="divide-y divide-slate-100 text-sm"></tbody>
-                </table>
-            </div>
-        </section>
-    </div>
-
-    <!-- Sync Modal -->
-    <div id="sync-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay hidden">
-        <div class="bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl space-y-6 mx-4">
-            <div class="text-center">
-                <h2 class="text-2xl font-black text-slate-800">スマホ同期設定</h2>
-                <p class="text-xs text-slate-500 font-bold mt-1 uppercase">Cloud Sync</p>
-            </div>
-            
-            <div class="flex flex-col items-center bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-200">
-                <div id="qrcode" class="bg-white p-2 rounded-xl shadow-inner mb-4 min-h-[140px] flex items-center justify-center"></div>
-                <p class="text-[10px] text-slate-400 font-bold uppercase text-center">このQRをスマホでスキャンしてアクセス</p>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">共有キー (合言葉)</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="sync-key" class="flex-1 font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none uppercase" placeholder="例: MYSTUDY" oninput="updateQRCode()">
-                        <button onclick="generateRandomKey()" class="bg-slate-100 p-3 rounded-xl hover:bg-slate-200">🎲</button>
-                    </div>
+        <!-- Analysis & Logs -->
+        <div class="grid grid-cols-1 gap-6">
+            <section class="glass-card overflow-hidden">
+                <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <h3 class="text-[10px] font-black text-slate-700 uppercase tracking-widest">累計学習分析</h3>
                 </div>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <button id="cloud-upload-btn" onclick="uploadToCloud()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg btn-hover text-sm">クラウドへ保存</button>
-                    <button id="cloud-download-btn" onclick="downloadFromCloud()" class="bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg btn-hover text-sm">読込（同期）</button>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left min-w-[600px]">
+                        <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <tr>
+                                <th class="px-6 py-4">学習項目</th>
+                                <th class="px-6 py-4">累計時間</th>
+                                <th class="px-6 py-4">達成度</th>
+                                <th class="px-6 py-4">評価</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analysis-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
                 </div>
-            </div>
+            </section>
             
-            <button onclick="closeSyncModal()" class="w-full text-slate-400 font-bold py-2 text-sm">閉じる</button>
+            <section class="glass-card p-4 md:p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">週間学習ログ</h3>
+                </div>
+                <div class="h-48 md:h-64">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </section>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    <!-- Edit Modal -->
+    <div id="manual-time-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay hidden px-4">
+        <div class="bg-white w-full max-w-sm p-6 rounded-3xl shadow-2xl space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-black text-slate-800">時間の手動編集</h2>
+                <span class="text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg text-xs font-bold" id="editing-task-name"></span>
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">分単位で入力</label>
+                <input type="number" id="manual-minutes" min="0" class="w-full text-3xl font-mono font-bold bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-500/10">
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeManualModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl btn-hover">戻る</button>
+                <button onclick="saveManualTime()" class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-lg shadow-indigo-500/30 btn-hover">保存</button>
+            </div>
+        </div>
+    </div>
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'study-tracker-v5';
-
-        const STORAGE_KEY = 'learning_tracker_v5_final';
+    <script>
+        const STORAGE_KEY = 'learning_tracker_final_v5';
         let currentDate = new Date().toLocaleDateString('sv-SE');
-        let state = { history: JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}, user: null };
-        let charts = {}, timerInterval, timeLeft = 25 * 60, isTimerRunning = false, activeTaskId = null;
+        let wakeLock = null; 
+        
+        const taskColors = [
+            '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', 
+            '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#475569'
+        ];
 
-        // グローバル関数として公開
-        window.openSyncModal = () => {
-            document.getElementById('sync-modal').classList.remove('hidden');
-            window.updateQRCode();
-        };
-
-        window.closeSyncModal = () => {
-            document.getElementById('sync-modal').classList.add('hidden');
-        };
-
-        window.updateQRCode = () => {
-            const keyInput = document.getElementById('sync-key');
-            const key = keyInput.value.trim().toUpperCase();
-            if (!key) return;
+        const getInitialHistory = () => {
+            let localData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
             try {
-                const url = new URL(window.location.href.split('?')[0]);
-                url.searchParams.set('key', key);
-                const qr = qrcode(0, 'M');
-                qr.addData(url.toString());
-                qr.make();
-                document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
-            } catch (e) { console.error("QR Error", e); }
+                const embedded = JSON.parse(document.getElementById('embedded-data').textContent || "{}");
+                Object.keys(embedded).forEach(d => { if(!localData[d]) localData[d] = embedded[d]; });
+            } catch(e) {}
+            return localData;
         };
 
-        window.generateRandomKey = () => {
-            document.getElementById('sync-key').value = Math.random().toString(36).substring(2, 8).toUpperCase();
-            window.updateQRCode();
+        let state = {
+            history: getInitialHistory(),
+            activeTaskId: null,
+            editingTaskId: null
         };
 
-        window.uploadToCloud = async () => {
-            const key = document.getElementById('sync-key').value.trim().toUpperCase();
-            if (!key || !state.user) return alert("合言葉を入力してください");
-            const btn = document.getElementById('cloud-upload-btn');
-            btn.innerText = "保存中..."; btn.disabled = true;
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', key), { 
-                    history: state.history, 
-                    updatedAt: new Date().toISOString() 
-                });
-                alert("クラウドに保存完了しました");
-            } catch (e) { alert("保存に失敗しました"); }
-            finally { btn.innerText = "クラウドへ保存"; btn.disabled = false; }
-        };
+        let charts = {};
+        let timerInterval, timeLeft = 25 * 60, isTimerRunning = false;
 
-        window.downloadFromCloud = async () => {
-            const key = document.getElementById('sync-key').value.trim().toUpperCase();
-            if (!key || !state.user) return alert("合言葉を入力してください");
-            const btn = document.getElementById('cloud-download-btn');
-            btn.innerText = "読込中..."; btn.disabled = true;
-            try {
-                const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', key));
-                if (snap.exists()) {
-                    state.history = snap.data().history;
-                    window.saveToLocal(); 
-                    window.refreshUI();
-                    alert("同期が完了しました");
-                    window.closeSyncModal();
-                } else { alert("データが見つかりません"); }
-            } catch (e) { alert("読込に失敗しました"); }
-            finally { btn.innerText = "読込（同期）"; btn.disabled = false; }
-        };
+        window.onload = () => {
+            // 分のセレクトボックス生成 (0-60)
+            const minSelect = document.getElementById('timer-minutes-input');
+            for (let i = 0; i <= 60; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = String(i).padStart(2, '0');
+                if (i === 25) opt.selected = true;
+                minSelect.appendChild(opt);
+            }
 
-        window.exportJSON = () => {
-            const blob = new Blob([JSON.stringify(state.history, null, 2)], { type: "application/json" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `study_data_${currentDate}.json`;
-            a.click();
-        };
+            // 秒のセレクトボックス生成 (00, 10, 20, 30, 40, 50)
+            const secSelect = document.getElementById('timer-seconds-input');
+            for (let i = 0; i < 60; i += 10) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = String(i).padStart(2, '0');
+                secSelect.appendChild(opt);
+            }
 
-        window.importJSON = (e) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                try {
-                    const data = JSON.parse(reader.result);
-                    state.history = data.history || data;
-                    window.saveToLocal(); window.refreshUI();
-                    alert("読み込み完了");
-                } catch(err) { alert("形式が正しくありません"); }
+            const picker = document.getElementById('date-picker');
+            picker.value = currentDate;
+            
+            picker.addEventListener('change', (e) => {
+                stopTimer();
+                currentDate = e.target.value;
+                initDayData();
+                refreshUI();
+            });
+
+            setInterval(checkDateChange, 30000);
+            
+            document.getElementById('task-title').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addNewTask();
+            });
+
+            // セレクトボックス変更時にタイマー時間を更新
+            const updateTimeFromSelect = () => {
+                if (!isTimerRunning) {
+                    const m = parseInt(minSelect.value) || 0;
+                    const s = parseInt(secSelect.value) || 0;
+                    timeLeft = m * 60 + s;
+                }
             };
-            if(e.target.files[0]) reader.readAsText(e.target.files[0]);
+
+            minSelect.addEventListener('change', updateTimeFromSelect);
+            secSelect.addEventListener('change', updateTimeFromSelect);
+
+            new Sortable(document.getElementById('task-list'), {
+                animation: 200, handle: '.drag-handle',
+                onEnd: () => {
+                    const titles = Array.from(document.getElementById('task-list').children).map(el => el.dataset.title);
+                    state.history[currentDate] = titles.map(t => state.history[currentDate].find(x => x.title === t));
+                    saveToLocal(); refreshUI();
+                }
+            });
+
+            initDayData();
+            refreshUI();
+
+            setInterval(() => {
+                const total = (state.history[currentDate] || []).reduce((a, t) => a + (t.seconds || 0), 0);
+                document.getElementById('global-stopwatch').innerText = formatTime(total);
+            }, 1000);
         };
 
-        window.addNewTask = () => {
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) {}
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (wakeLock !== null) {
+                await wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        function checkDateChange() {
+            const now = new Date().toLocaleDateString('sv-SE');
+            if (now !== currentDate && !isTimerRunning) {
+                currentDate = now;
+                document.getElementById('date-picker').value = currentDate;
+                initDayData();
+                refreshUI();
+            }
+        }
+
+        function initDayData() {
+            if (!state.history[currentDate]) {
+                const dates = Object.keys(state.history).sort();
+                const lastDate = dates.filter(d => d < currentDate).pop();
+                state.history[currentDate] = lastDate ? 
+                    state.history[lastDate].map(t => ({ title: t.title, seconds: 0, completed: false })) : [];
+                saveToLocal();
+            }
+        }
+
+        function saveToLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history)); }
+
+        function refreshUI() {
+            renderTasks();
+            updateCharts();
+            renderAnalysis();
+            document.getElementById('date-display').innerText = currentDate;
+        }
+
+        function addNewTask() {
             const input = document.getElementById('task-title');
             const title = input.value.trim();
             if (!title) return;
-            if(!state.history[currentDate]) state.history[currentDate] = [];
-            state.history[currentDate].push({ title, seconds: 0, completed: false });
-            input.value = ''; window.saveToLocal(); window.refreshUI();
-        };
+            Object.keys(state.history).forEach(d => {
+                if (d >= currentDate && !state.history[d].some(t => t.title === title)) {
+                    state.history[d].push({ title, seconds: 0, completed: false });
+                }
+            });
+            input.value = ''; saveToLocal(); refreshUI();
+        }
 
-        window.toggleTask = (t) => {
-            state.history[currentDate].forEach(x => { if(x.title === t) x.completed = !x.completed; });
-            window.saveToLocal(); window.refreshUI();
-        };
+        function deleteTask(title) {
+            Object.keys(state.history).forEach(d => {
+                if (d >= currentDate) state.history[d] = state.history[d].filter(t => t.title !== title);
+            });
+            if (state.activeTaskId === title) stopTimer();
+            saveToLocal(); refreshUI();
+        }
 
-        window.deleteTask = (t) => {
-            state.history[currentDate] = state.history[currentDate].filter(x => x.title !== t);
-            window.saveToLocal(); window.refreshUI();
-        };
+        function toggleTask(title) {
+            state.history[currentDate] = state.history[currentDate].map(t => t.title === title ? {...t, completed: !t.completed} : t);
+            saveToLocal(); refreshUI();
+        }
 
-        window.setActive = (t) => {
-            activeTaskId = (activeTaskId === t) ? null : t;
-            window.refreshUI();
-        };
+        function renderTasks() {
+            const list = document.getElementById('task-list');
+            list.innerHTML = '';
+            (state.history[currentDate] || []).forEach(task => {
+                const isActive = state.activeTaskId === task.title;
+                const div = document.createElement('div');
+                div.className = `flex items-center gap-2 p-3 rounded-2xl border transition-all ${isActive ? 'active-timer shadow-md' : 'bg-white border-slate-200'} ${task.completed ? 'opacity-50' : ''}`;
+                div.dataset.title = task.title;
+                div.innerHTML = `
+                    <div class="drag-handle text-slate-300 cursor-grab px-1">⋮⋮</div>
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.title}')" class="w-5 h-5 accent-indigo-600 rounded-lg">
+                    <div class="flex-1 truncate font-bold text-slate-700 text-sm ${task.completed ? 'line-through opacity-50' : ''}">${task.title}</div>
+                    <div class="font-mono text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md">${formatTime(task.seconds)}</div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="openManualModal('${task.title}')" class="p-2 text-slate-400 hover:text-indigo-600">✎</button>
+                        <button onclick="state.activeTaskId='${task.title}'; refreshUI();" class="p-2 ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} rounded-lg shadow-sm">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h-2V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                        </button>
+                        <button onclick="deleteTask('${task.title}')" class="p-2 text-slate-300 hover:text-rose-500">✕</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
 
-        window.toggleGlobalTimer = () => {
-            if (!activeTaskId) return alert("タスクを選択（▶ボタン）してください");
-            isTimerRunning ? window.stopTimer() : window.startTimer();
-        };
+        function openManualModal(title) {
+            state.editingTaskId = title;
+            document.getElementById('editing-task-name').innerText = title;
+            const task = state.history[currentDate].find(t => t.title === title);
+            document.getElementById('manual-minutes').value = Math.floor(task.seconds / 60);
+            document.getElementById('manual-time-modal').classList.remove('hidden');
+        }
+        function closeManualModal() { document.getElementById('manual-time-modal').classList.add('hidden'); }
+        function saveManualTime() {
+            const mins = parseInt(document.getElementById('manual-minutes').value) || 0;
+            state.history[currentDate] = state.history[currentDate].map(t => t.title === state.editingTaskId ? {...t, seconds: mins * 60} : t);
+            saveToLocal(); refreshUI(); closeManualModal();
+        }
 
-        window.startTimer = () => {
+        function toggleGlobalTimer() { if (!state.activeTaskId) return; isTimerRunning ? stopTimer() : startTimer(); }
+        async function startTimer() {
             isTimerRunning = true;
-            const inputMin = document.getElementById('timer-minutes-input').value;
-            if(!timerInterval) timeLeft = parseInt(inputMin) * 60;
-            
+            await requestWakeLock(); 
             timerInterval = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
-                    const t = state.history[currentDate].find(x => x.title === activeTaskId);
-                    if (t) t.seconds++;
-                    window.updateTimerUI();
-                } else {
-                    window.stopTimer();
-                    alert("タイムアップ！");
-                }
+                    const task = (state.history[currentDate] || []).find(t => t.title === state.activeTaskId);
+                    if (task) task.seconds++;
+                    saveToLocal(); updateTimerUI();
+                } else { stopTimer(); }
             }, 1000);
-            window.updateTimerButton();
-        };
-
-        window.stopTimer = () => {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            isTimerRunning = false;
-            window.updateTimerButton();
-            window.saveToLocal();
-        };
-
-        window.updateTimerUI = () => {
-            const m = Math.floor(timeLeft / 60);
-            const s = timeLeft % 60;
-            document.getElementById('timer-minutes-input').value = m;
-            document.getElementById('global-countdown').innerText = String(s).padStart(2, '0');
-            window.refreshUI();
-        };
-
-        window.updateTimerButton = () => {
-            document.getElementById('timer-icon').innerHTML = isTimerRunning 
-                ? '<rect x="6" y="6" width="8" height="8" fill="currentColor" />' 
-                : '<path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/>';
-        };
-
-        window.formatTime = (sec) => {
+            updateTimerButton();
+        }
+        async function stopTimer() { 
+            clearInterval(timerInterval); 
+            isTimerRunning = false; 
+            await releaseWakeLock(); 
+            updateTimerButton(); 
+        }
+        function updateTimerUI() { 
+            const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+            
+            // 選択肢に秒数が存在する場合のみ反映（タイマー進行中などの端数対策）
+            const minInput = document.getElementById('timer-minutes-input');
+            const secInput = document.getElementById('timer-seconds-input');
+            
+            minInput.value = m;
+            
+            // 10秒ステップに存在しない値の場合は、最も近い値を選択するかそのままにする
+            // ここではタイマーUIが「表示」としての役割を果たすようセットします。
+            const options = Array.from(secInput.options).map(o => parseInt(o.value));
+            if (options.includes(s)) {
+                secInput.value = s;
+            } else if (s < 0) {
+                secInput.value = 0;
+            }
+            // タイマー進行中はセレクトボックスの値が秒と一致しない場合があるがロジックはtimeLeftで管理
+            refreshUI();
+        }
+        function updateTimerButton() {
+            const btn = document.getElementById('timer-btn');
+            if (isTimerRunning) {
+                btn.innerHTML = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+            } else {
+                btn.innerHTML = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>`;
+            }
+        }
+        function formatTime(sec) {
             const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
             return [h, m, s].map(v => String(v).padStart(2, '0')).join(":");
-        };
+        }
 
-        window.saveToLocal = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
-
-        window.initDayData = () => {
-            if (!state.history[currentDate]) {
-                const dates = Object.keys(state.history).sort();
-                const last = dates.filter(d => d < currentDate).pop();
-                state.history[currentDate] = last ? state.history[last].map(t => ({...t, seconds: 0, completed: false})) : [];
-                window.saveToLocal();
-            }
-        };
-
-        window.refreshUI = () => {
-            window.renderTasks();
-            window.updateCharts();
-            window.renderAnalysis();
-            document.getElementById('date-display').innerText = currentDate;
-        };
-
-        window.renderTasks = () => {
-            const list = document.getElementById('task-list'); list.innerHTML = '';
-            (state.history[currentDate] || []).forEach(task => {
-                const isAct = activeTaskId === task.title;
-                const div = document.createElement('div');
-                div.className = `flex items-center gap-2 p-3 rounded-2xl border ${isAct ? 'active-timer shadow-md' : 'bg-white border-slate-200'} ${task.completed ? 'opacity-50' : ''}`;
-                div.innerHTML = `
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.title}')" class="w-5 h-5 accent-indigo-600 rounded-lg">
-                    <div class="flex-1 truncate font-bold text-slate-700 text-sm ${task.completed ? 'line-through' : ''}">${task.title}</div>
-                    <div class="font-mono text-[10px] font-bold text-indigo-500">${window.formatTime(task.seconds)}</div>
-                    <button onclick="setActive('${task.title}')" class="p-2 ${isAct ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} rounded-lg">▶</button>
-                    <button onclick="deleteTask('${task.title}')" class="p-2 text-slate-300 hover:text-rose-500">✕</button>`;
-                list.appendChild(div);
-            });
-            const total = (state.history[currentDate] || []).reduce((a, t) => a + t.seconds, 0);
-            document.getElementById('global-stopwatch').innerText = window.formatTime(total);
-        };
-
-        window.updateCharts = () => {
+        function updateCharts() {
             const tasks = state.history[currentDate] || [];
             const done = tasks.filter(t => t.completed).length, total = tasks.length || 1;
             const pct = Math.round((done / total) * 100);
-            document.querySelector('#percentage-label span').innerText = `${pct}%`;
-            window.initChart('todayProgressChart', 'doughnut', [done, total - done], ['#4f46e5', '#f1f5f9']);
+            const label = document.querySelector('#percentage-label span');
+            if(label) label.innerText = `${pct}%`;
+            initChart('todayProgressChart', 'doughnut', [done, total - done], ['#4f46e5', '#f1f5f9']);
             
-            const tasksWithTime = tasks.filter(t => t.seconds > 0);
-            window.initChart('pieChart', 'pie', tasksWithTime.length ? tasksWithTime.map(t => t.seconds) : [1], tasksWithTime.length ? ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] : ['#f1f5f9'], tasksWithTime.map(t => t.title));
-            
-            const days = []; for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d.toLocaleDateString('sv-SE')); }
-            const barData = days.map(d => (state.history[d] || []).reduce((a, b) => a + b.seconds, 0) / 3600);
-            window.initChart('weeklyChart', 'bar', barData, '#6366f1', days.map(d => d.slice(5)));
-        };
-
-        window.initChart = (id, type, data, colors, labels = []) => {
-            if (charts[id]) { 
-                charts[id].data.datasets[0].data = data; 
-                charts[id].data.labels = labels; 
-                charts[id].update(); 
-            } else { 
-                charts[id] = new Chart(document.getElementById(id), { 
-                    type, 
-                    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, borderRadius: 4 }] }, 
-                    options: { maintainAspectRatio: false, plugins: { legend: { display: type === 'pie', position: 'bottom' } } } 
-                }); 
+            const days = [];
+            for(let i=6; i>=0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                days.push(d.toLocaleDateString('sv-SE'));
             }
-        };
+            let weekDone = 0, weekTotal = 0;
+            days.forEach(d => {
+                const dayTasks = state.history[d] || [];
+                weekDone += dayTasks.filter(t => t.completed).length;
+                weekTotal += dayTasks.length;
+            });
+            const weekPct = weekTotal === 0 ? 0 : Math.round((weekDone / weekTotal) * 100);
+            const wLabel = document.querySelector('#weekly-percentage-label span');
+            if(wLabel) wLabel.innerText = `${weekPct}%`;
+            initChart('weeklyProgressChart', 'doughnut', [weekDone, weekTotal - weekDone || 1], ['#6366f1', '#f1f5f9']);
 
-        window.renderAnalysis = () => {
+            const tasksWithTime = tasks.filter(t => t.seconds > 0);
+            if(tasksWithTime.length > 0) {
+                const colors = tasksWithTime.map((t, i) => taskColors[i % taskColors.length]);
+                initChart('pieChart', 'pie', tasksWithTime.map(t => t.seconds), colors, tasksWithTime.map(t => t.title));
+            } else {
+                initChart('pieChart', 'pie', [1], ['#f1f5f9'], ['データなし']);
+            }
+            
+            const barData = days.map(d => (state.history[d] || []).reduce((a, b) => a + (b.seconds || 0), 0) / 3600);
+            initChart('weeklyChart', 'bar', barData, '#6366f1', days.map(d => d.slice(5)));
+        }
+
+        function initChart(id, type, data, colors, labels = []) {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (charts[id]) {
+                charts[id].data.datasets[0].data = data;
+                charts[id].data.datasets[0].backgroundColor = colors;
+                charts[id].data.labels = labels;
+                charts[id].update();
+            } else {
+                charts[id] = new Chart(ctx, {
+                    type, data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, borderRadius: type === 'bar' ? 6 : 0 }] },
+                    options: { 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { display: type === 'pie', position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } 
+                        }, 
+                        scales: type === 'bar' ? { y: { beginAtZero: true } } : {} 
+                    }
+                });
+            }
+        }
+
+        function renderAnalysis() {
             const agg = {};
-            Object.values(state.history).forEach(day => { day.forEach(t => { if(!agg[t.title]) agg[t.title] = {s:0, c:0, a:0}; agg[t.title].s += t.seconds; agg[t.title].a++; if(t.completed) agg[t.title].c++; }); });
-            const table = document.getElementById('analysis-table'); table.innerHTML = '';
+            Object.values(state.history).forEach(day => {
+                day.forEach(t => {
+                    if (!agg[t.title]) agg[t.title] = { s: 0, c: 0, a: 0 };
+                    agg[t.title].s += t.seconds; agg[t.title].a++; if (t.completed) agg[t.title].c++;
+                });
+            });
+            const table = document.getElementById('analysis-table');
+            if(!table) return;
+            table.innerHTML = '';
             Object.entries(agg).sort((a,b) => b[1].s - a[1].s).forEach(([title, d]) => {
                 const pct = Math.round((d.c / d.a) * 100);
-                table.innerHTML += `<tr><td class="px-6 py-4 font-bold text-slate-700">${title}</td><td class="px-6 py-4 text-indigo-500 font-mono font-bold">${window.formatTime(d.s)}</td><td class="px-6 py-4">${pct}%</td><td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full text-[10px] font-black uppercase">${pct >= 80 ? 'マスター' : '進行中'}</span></td></tr>`;
+                let status = pct >= 80 ? { t: 'マスター', c: 'bg-emerald-100 text-emerald-700' } : (pct < 40 ? { t: '要改善', c: 'bg-rose-100 text-rose-700' } : { t: '継続中', c: 'bg-amber-100 text-amber-700' });
+                table.innerHTML += `<tr><td class="px-6 py-4 font-bold text-slate-700">${title}</td><td class="px-6 py-4 font-mono font-bold text-indigo-500">${formatTime(d.s)}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><div class="w-16 h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:${pct}%"></div></div><span class="text-[10px] font-black text-slate-400">${pct}%</span></div></td><td class="px-6 py-4"><span class="${status.c} px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">${status.t}</span></td></tr>`;
             });
-        };
+        }
 
-        window.exportAsHtml = () => {
-            const docClone = new DOMParser().parseFromString(document.documentElement.outerHTML, 'text/html');
-            docClone.getElementById('embedded-data').textContent = JSON.stringify(state.history);
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(["<!DOCTYPE html>\n" + docClone.documentElement.outerHTML], { type: 'text/html' })); a.download = `StudyTracker_Backup.html`; a.click();
-        };
+        function exportAsHtml() {
+            const data = localStorage.getItem(STORAGE_KEY) || "{}";
+            const doc = new DOMParser().parseFromString(document.documentElement.outerHTML, 'text/html');
+            const embedded = doc.getElementById('embedded-data');
+            if(embedded) embedded.textContent = data;
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob(["<!DOCTYPE html>\n" + doc.documentElement.outerHTML], { type: 'text/html' }));
+            a.download = `StudyTracker_Backup.html`;
+            a.click();
+        }
 
-        // 初期化実行
-        const init = async () => {
-            await signInAnonymously(auth);
-            onAuthStateChanged(auth, (user) => { state.user = user; });
+        function exportJSON() {
+            const blob = new Blob([JSON.stringify({ history: state.history, savedAt: new Date().toISOString() }, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "study-tracker-data.json";
+            a.click();
+        }
 
-            document.getElementById('date-picker').value = currentDate;
-            document.getElementById('date-picker').addEventListener('change', (e) => {
-                window.stopTimer();
-                currentDate = e.target.value;
-                window.initDayData();
-                window.refreshUI();
-            });
-
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('key')) {
-                document.getElementById('sync-key').value = urlParams.get('key').toUpperCase();
-                window.openSyncModal();
-            }
-
-            window.initDayData();
-            window.refreshUI();
-        };
-        init();
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const parsed = JSON.parse(reader.result);
+                    if (!parsed.history) throw new Error();
+                    state.history = parsed.history;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+                    location.reload();
+                } catch { alert("読み込みに失敗しました"); }
+            };
+            reader.readAsText(file);
+        }
     </script>
 </body>
 </html>
