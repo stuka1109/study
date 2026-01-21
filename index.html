@@ -9,79 +9,133 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap');
-        body { font-family: 'Inter', 'Noto Sans JP', sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', 'Noto Sans JP', sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
+        .dark body { background-color: #0f172a; color: #f1f5f9; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .glass-card { background: white; border-radius: 1.25rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); }
+        .glass-card { background: white; border-radius: 1.25rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); transition: background-color 0.3s, border-color 0.3s; }
+        .dark .glass-card { background: #1e293b; border-color: #334155; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3); }
         .btn-hover { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-hover:active { transform: scale(0.95); }
         .active-timer { border: 2px solid #6366f1; background: #f5f7ff; animation: pulse 2s infinite; }
+        .dark .active-timer { background: #2d3748; border-color: #818cf8; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); } 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); } }
         .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
         input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        .custom-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.2rem center; background-size: 0.8em; padding-right: 1.1rem; }
+        .custom-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.2rem center; background-size: 0.8em; padding-right: 1.1rem; }
+        .dark .custom-select { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); }
+        
+        /* フォーカスモード（横向き対応） */
+        #focus-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #f8fafc;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+        }
+        .dark #focus-overlay { background: #0f172a; }
+        #focus-overlay.active { display: flex; }
     </style>
+    <script>
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (e.matches) document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+        });
+    </script>
 </head>
-<body class="p-3 md:p-8 min-h-screen">
+<body class="p-3 md:p-8 min-h-screen dark:bg-slate-900 dark:text-slate-200">
 
     <script id="embedded-data" type="application/json">{}</script>
 
+    <!-- 集中モードオーバーレイ -->
+    <div id="focus-overlay">
+        <div class="absolute top-6 left-8">
+            <h2 id="focus-task-name" class="text-indigo-600 dark:text-indigo-400 font-black text-lg tracking-widest">学習中...</h2>
+        </div>
+        
+        <div class="flex flex-col items-center gap-2">
+            <span class="text-slate-400 dark:text-slate-500 font-black text-xs md:text-sm tracking-[0.3em] uppercase">残り時間</span>
+            <div id="focus-countdown" class="text-[20vw] leading-none font-black font-mono text-slate-800 dark:text-white tracking-tighter">00:00</div>
+            <button onclick="stopTimer()" class="mt-4 px-10 py-3 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black text-sm btn-hover border border-slate-300 dark:border-slate-700">終了する</button>
+        </div>
+
+        <div class="absolute bottom-10 w-full px-12 flex justify-between items-end">
+            <div class="flex flex-col items-start">
+                <span class="text-slate-400 dark:text-slate-500 font-black text-[10px] uppercase tracking-widest mb-1">現在時刻</span>
+                <div id="focus-clock" class="text-4xl md:text-5xl font-black font-mono text-slate-700 dark:text-slate-300 leading-none">00:00</div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-slate-400 dark:text-slate-500 font-black text-[10px] uppercase tracking-widest mb-1">今日の合計</span>
+                <div id="focus-total" class="text-xl md:text-2xl font-black font-mono text-indigo-500/80 leading-none">00:00</div>
+            </div>
+        </div>
+    </div>
+
     <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
         <!-- Header -->
-        <header class="flex flex-col gap-4 glass-card p-4 md:p-6">
+        <header class="flex flex-col gap-4 glass-card p-4 md:p-6 dark:bg-slate-800 dark:border-slate-700">
             <div class="flex flex-wrap justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="bg-indigo-600 p-2 md:p-3 rounded-xl shadow-lg">
                         <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
                     <div>
-                        <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight text-shadow-sm">Study Tracker Pro</h1>
-                        <p id="date-display" class="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-wider font-mono"></p>
+                        <h1 class="text-xl md:text-2xl font-black text-slate-800 dark:text-white tracking-tight text-shadow-sm">Study Tracker Pro</h1>
+                        <div class="flex items-center gap-3 mt-0.5">
+                            <p id="date-display" class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-wider font-mono"></p>
+                            <span class="text-slate-300 dark:text-slate-600 text-[10px]">|</span>
+                            <p id="current-time-display" class="text-indigo-600 dark:text-indigo-400 text-[10px] md:text-xs font-black uppercase tracking-wider font-mono"></p>
+                        </div>
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <label class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold btn-hover cursor-pointer shadow-sm border border-slate-200">
+                    <label class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-bold btn-hover cursor-pointer shadow-sm border border-slate-200 dark:border-slate-600">
                         JSON読込 <input type="file" class="hidden" onchange="importJSON(event)">
                     </label>
-                    <button onclick="exportJSON()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg">JSON保存</button>
+                    <button onclick="exportJSON()" class="bg-slate-800 dark:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg">JSON保存</button>
                     <button onclick="exportAsHtml()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg">HTML保存</button>
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-3 md:p-4 rounded-2xl border border-slate-200">
+            <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 dark:bg-slate-700/50 p-3 md:p-4 rounded-2xl border border-slate-200 dark:border-slate-600 transition-all duration-500" id="timer-container">
                 <div class="flex flex-1 justify-around w-full items-center">
-                    <div class="flex flex-col items-center">
-                        <span class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">カウントダウン</span>
-                        <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100">
-                            <!-- 分の選択 (0-60, 5分刻み) -->
-                            <select id="timer-minutes-input" class="custom-select bg-transparent text-lg font-bold text-slate-700 outline-none text-center cursor-pointer">
-                                <!-- JSでオプションを生成 -->
+                    <div class="flex flex-col items-center" id="countdown-section">
+                        <span class="text-[10px] font-black text-slate-400 dark:text-slate-400 uppercase mb-1 tracking-widest">カウントダウン</span>
+                        <div class="flex items-center gap-1 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-600" id="timer-display-box">
+                            <select id="timer-minutes-input" class="custom-select bg-transparent text-lg md:text-xl font-bold text-slate-700 dark:text-slate-200 outline-none text-center cursor-pointer">
+                                <!-- JSでオプション生成 -->
                             </select>
-                            <span class="text-slate-300 font-bold">:</span>
-                            <!-- 秒の選択 (00-50, 10秒刻み) -->
-                            <select id="timer-seconds-input" class="custom-select bg-transparent text-lg font-bold text-slate-700 outline-none text-center cursor-pointer">
-                                <!-- JSでオプションを生成 -->
+                            <span class="text-slate-300 dark:text-slate-500 font-bold">:</span>
+                            <select id="timer-seconds-input" class="custom-select bg-transparent text-lg md:text-xl font-bold text-slate-700 dark:text-slate-200 outline-none text-center cursor-pointer">
+                                <!-- JSでオプション生成 -->
                             </select>
-                            <button onclick="toggleGlobalTimer()" id="timer-btn" class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg btn-hover ml-1">
+                            <button onclick="toggleGlobalTimer()" id="timer-btn" class="p-1.5 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-lg btn-hover ml-1">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>
                             </button>
                         </div>
                     </div>
-                    <div class="w-px h-10 bg-slate-200 mx-2"></div>
-                    <div class="flex flex-col items-center">
-                        <span class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">本日の合計学習</span>
-                        <div id="global-stopwatch" class="font-mono text-xl md:text-2xl font-black text-indigo-600 drop-shadow-sm">00:00:00</div>
+                    <div class="w-px h-10 bg-slate-200 dark:bg-slate-600 mx-2" id="timer-separator"></div>
+                    <div class="flex flex-col items-center" id="stopwatch-section">
+                        <span class="text-[10px] font-black text-slate-400 dark:text-slate-400 uppercase mb-1 tracking-widest">本日の合計学習</span>
+                        <div id="global-stopwatch" class="font-mono text-xl md:text-2xl font-black text-indigo-600 dark:text-indigo-400 drop-shadow-sm">00:00:00</div>
                     </div>
                 </div>
-                <input type="date" id="date-picker" class="w-full sm:w-auto border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold outline-none bg-white focus:ring-2 focus:ring-indigo-500/20">
+                <input type="date" id="date-picker" class="w-full sm:w-auto border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-sm font-bold outline-none bg-white dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500/20">
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <!-- Left: Task Control -->
             <div class="lg:col-span-7 space-y-4">
-                <section class="glass-card p-4 md:p-6">
+                <section class="glass-card p-4 md:p-6 dark:bg-slate-800 dark:border-slate-700">
                     <div class="flex gap-2 mb-6">
-                        <input type="text" id="task-title" placeholder="新しいタスク名..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500/20">
+                        <input type="text" id="task-title" placeholder="新しいタスク名..." class="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500/20 dark:text-white">
                         <button onclick="addNewTask()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-sm shadow-md btn-hover">追加</button>
                     </div>
                     <div id="task-list" class="space-y-3"></div>
@@ -90,27 +144,27 @@
 
             <!-- Right: Visualizer -->
             <div class="lg:col-span-5 flex flex-col gap-4">
-                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
+                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden dark:bg-slate-800 dark:border-slate-700">
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">1週間の達成度</h3>
                     <div class="relative w-28 h-28">
                         <canvas id="weeklyProgressChart"></canvas>
                         <div id="weekly-percentage-label" class="absolute inset-0 flex items-center justify-center">
-                            <span class="text-lg font-black text-indigo-600">0%</span>
+                            <span class="text-lg font-black text-indigo-600 dark:text-indigo-400">0%</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
+                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden dark:bg-slate-800 dark:border-slate-700">
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">本日の進捗状況</h3>
                     <div class="relative w-28 h-28">
                         <canvas id="todayProgressChart"></canvas>
                         <div id="percentage-label" class="absolute inset-0 flex items-center justify-center">
-                            <span class="text-lg font-black text-slate-800">0%</span>
+                            <span class="text-lg font-black text-slate-800 dark:text-slate-200">0%</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px]">
+                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] dark:bg-slate-800 dark:border-slate-700">
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">学習時間配分</h3>
                     <div class="relative w-full h-28">
                         <canvas id="pieChart"></canvas>
@@ -119,15 +173,14 @@
             </div>
         </div>
 
-        <!-- Analysis & Logs -->
         <div class="grid grid-cols-1 gap-6">
-            <section class="glass-card overflow-hidden">
-                <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h3 class="text-[10px] font-black text-slate-700 uppercase tracking-widest">累計学習分析</h3>
+            <section class="glass-card overflow-hidden dark:bg-slate-800 dark:border-slate-700">
+                <div class="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/30 flex justify-between items-center">
+                    <h3 class="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">累計学習分析</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left min-w-[600px]">
-                        <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <thead class="bg-slate-50 dark:bg-slate-700 text-[10px] font-black text-slate-400 dark:text-slate-400 uppercase tracking-widest">
                             <tr>
                                 <th class="px-6 py-4">学習項目</th>
                                 <th class="px-6 py-4">累計時間</th>
@@ -135,12 +188,12 @@
                                 <th class="px-6 py-4">評価</th>
                             </tr>
                         </thead>
-                        <tbody id="analysis-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                        <tbody id="analysis-table" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></tbody>
                     </table>
                 </div>
             </section>
             
-            <section class="glass-card p-4 md:p-6">
+            <section class="glass-card p-4 md:p-6 dark:bg-slate-800 dark:border-slate-700">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">週間学習ログ</h3>
                 </div>
@@ -151,19 +204,18 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div id="manual-time-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay hidden px-4">
-        <div class="bg-white w-full max-w-sm p-6 rounded-3xl shadow-2xl space-y-6">
+        <div class="bg-white dark:bg-slate-800 w-full max-sm p-6 rounded-3xl shadow-2xl space-y-6">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-black text-slate-800">時間の手動編集</h2>
-                <span class="text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg text-xs font-bold" id="editing-task-name"></span>
+                <h2 class="text-xl font-black text-slate-800 dark:text-white">時間の手動編集</h2>
+                <span class="text-indigo-600 bg-indigo-50 dark:bg-indigo-900/50 dark:text-indigo-300 px-3 py-1 rounded-lg text-xs font-bold" id="editing-task-name"></span>
             </div>
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">分単位で入力</label>
-                <input type="number" id="manual-minutes" min="0" class="w-full text-3xl font-mono font-bold bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-500/10">
+                <input type="number" id="manual-minutes" min="0" class="w-full text-3xl font-mono font-bold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-500/10 dark:text-white">
             </div>
             <div class="flex gap-3 pt-2">
-                <button onclick="closeManualModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl btn-hover">戻る</button>
+                <button onclick="closeManualModal()" class="flex-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold py-3 rounded-2xl btn-hover">戻る</button>
                 <button onclick="saveManualTime()" class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-lg shadow-indigo-500/30 btn-hover">保存</button>
             </div>
         </div>
@@ -196,9 +248,9 @@
 
         let charts = {};
         let timerInterval, timeLeft = 25 * 60, isTimerRunning = false;
+        let lastTimestamp = 0;
 
         window.onload = () => {
-            // 分のセレクトボックス生成 (0-60, 5分刻み)
             const minSelect = document.getElementById('timer-minutes-input');
             for (let i = 0; i <= 60; i += 5) {
                 const opt = document.createElement('option');
@@ -208,7 +260,6 @@
                 minSelect.appendChild(opt);
             }
 
-            // 秒のセレクトボックス生成 (00-50, 10秒刻み)
             const secSelect = document.getElementById('timer-seconds-input');
             for (let i = 0; i < 60; i += 10) {
                 const opt = document.createElement('option');
@@ -227,7 +278,10 @@
                 refreshUI();
             });
 
-            setInterval(checkDateChange, 30000);
+            setInterval(() => {
+                checkDateChange();
+                updateClock();
+            }, 1000);
             
             document.getElementById('task-title').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') addNewTask();
@@ -255,26 +309,38 @@
 
             initDayData();
             refreshUI();
+            updateClock();
 
             setInterval(() => {
-                const total = (state.history[currentDate] || []).reduce((a, t) => a + (t.seconds || 0), 0);
-                document.getElementById('global-stopwatch').innerText = formatTime(total);
+                const totalSec = (state.history[currentDate] || []).reduce((a, t) => a + (t.seconds || 0), 0);
+                const h = Math.floor(totalSec / 3600);
+                const m = Math.floor((totalSec % 3600) / 60);
+                const s = totalSec % 60;
+                
+                document.getElementById('global-stopwatch').innerText = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                // 集中モード用の合計時間を分単位（HH:MM）に
+                document.getElementById('focus-total').innerText = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
             }, 1000);
         };
 
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('current-time-display').innerText = `${h}:${m}:${s}`;
+            document.getElementById('focus-clock').innerText = `${h}:${m}`;
+        }
+
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                } catch (err) {}
+                try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
             }
         }
 
         async function releaseWakeLock() {
-            if (wakeLock !== null) {
-                await wakeLock.release();
-                wakeLock = null;
-            }
+            if (wakeLock !== null) { await wakeLock.release(); wakeLock = null; }
         }
 
         function checkDateChange() {
@@ -337,19 +403,19 @@
             (state.history[currentDate] || []).forEach(task => {
                 const isActive = state.activeTaskId === task.title;
                 const div = document.createElement('div');
-                div.className = `flex items-center gap-2 p-3 rounded-2xl border transition-all ${isActive ? 'active-timer shadow-md' : 'bg-white border-slate-200'} ${task.completed ? 'opacity-50' : ''}`;
+                div.className = `flex items-center gap-2 p-3 rounded-2xl border transition-all ${isActive ? 'active-timer shadow-md' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'} ${task.completed ? 'opacity-50' : ''}`;
                 div.dataset.title = task.title;
                 div.innerHTML = `
-                    <div class="drag-handle text-slate-300 cursor-grab px-1">⋮⋮</div>
+                    <div class="drag-handle text-slate-300 dark:text-slate-600 cursor-grab px-1">⋮⋮</div>
                     <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.title}')" class="w-5 h-5 accent-indigo-600 rounded-lg">
-                    <div class="flex-1 truncate font-bold text-slate-700 text-sm ${task.completed ? 'line-through opacity-50' : ''}">${task.title}</div>
-                    <div class="font-mono text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md">${formatTime(task.seconds)}</div>
+                    <div class="flex-1 truncate font-bold text-slate-700 dark:text-slate-200 text-sm ${task.completed ? 'line-through opacity-50' : ''}">${task.title}</div>
+                    <div class="font-mono text-[10px] font-bold text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">${formatTime(task.seconds)}</div>
                     <div class="flex items-center gap-1">
-                        <button onclick="openManualModal('${task.title}')" class="p-2 text-slate-400 hover:text-indigo-600">✎</button>
-                        <button onclick="state.activeTaskId='${task.title}'; refreshUI();" class="p-2 ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} rounded-lg shadow-sm">
+                        <button onclick="openManualModal('${task.title}')" class="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400">✎</button>
+                        <button onclick="state.activeTaskId='${task.title}'; refreshUI();" class="p-2 ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'} rounded-lg shadow-sm">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h-2V8h2v8zm4 0h-2V8h2v8z"/></svg>
                         </button>
-                        <button onclick="deleteTask('${task.title}')" class="p-2 text-slate-300 hover:text-rose-500">✕</button>
+                        <button onclick="deleteTask('${task.title}')" class="p-2 text-slate-300 dark:text-slate-600 hover:text-rose-500">✕</button>
                     </div>
                 `;
                 list.appendChild(div);
@@ -371,31 +437,59 @@
         }
 
         function toggleGlobalTimer() { if (!state.activeTaskId) return; isTimerRunning ? stopTimer() : startTimer(); }
+        
         async function startTimer() {
+            if(isTimerRunning) return;
             isTimerRunning = true;
+            lastTimestamp = Date.now();
+            
+            // 集中モード起動
+            document.getElementById('focus-overlay').classList.add('active');
+            document.getElementById('focus-task-name').innerText = state.activeTaskId;
+            updateFocusCountdown();
+
             await requestWakeLock(); 
+            
             timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    const task = (state.history[currentDate] || []).find(t => t.title === state.activeTaskId);
-                    if (task) task.seconds++;
-                    saveToLocal(); updateTimerUI();
-                } else { stopTimer(); }
+                const now = Date.now();
+                const delta = Math.floor((now - lastTimestamp) / 1000);
+                if (delta >= 1) {
+                    lastTimestamp = now - ((now - lastTimestamp) % 1000);
+                    if (timeLeft > 0) {
+                        const actualDelta = Math.min(delta, timeLeft);
+                        timeLeft -= actualDelta;
+                        const task = (state.history[currentDate] || []).find(t => t.title === state.activeTaskId);
+                        if (task) task.seconds += actualDelta;
+                        saveToLocal();
+                        updateTimerUI();
+                        updateFocusCountdown();
+                        if (timeLeft <= 0) stopTimer();
+                    } else { stopTimer(); }
+                }
             }, 1000);
             updateTimerButton();
         }
+
         async function stopTimer() { 
             clearInterval(timerInterval); 
             isTimerRunning = false; 
+            
+            // 集中モード終了
+            document.getElementById('focus-overlay').classList.remove('active');
+
             await releaseWakeLock(); 
             updateTimerButton(); 
         }
+
+        function updateFocusCountdown() {
+            const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+            document.getElementById('focus-countdown').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
         function updateTimerUI() { 
             const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
             const minInput = document.getElementById('timer-minutes-input');
             const secInput = document.getElementById('timer-seconds-input');
-            
-            // 表示用のヘルパー：現在の値がセレクトボックスに存在するか確認し、なければ一時的に追加
             const ensureOption = (select, val) => {
                 let exists = Array.from(select.options).some(o => parseInt(o.value) === val);
                 if (!exists) {
@@ -406,32 +500,33 @@
                 }
                 select.value = val;
             };
-
             ensureOption(minInput, m);
             ensureOption(secInput, s);
-            
             refreshUI();
         }
+
         function updateTimerButton() {
             const btn = document.getElementById('timer-btn');
-            if (isTimerRunning) {
-                btn.innerHTML = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-            } else {
-                btn.innerHTML = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>`;
-            }
+            btn.innerHTML = isTimerRunning 
+                ? `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
+                : `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>`;
         }
+
         function formatTime(sec) {
             const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
             return [h, m, s].map(v => String(v).padStart(2, '0')).join(":");
         }
 
         function updateCharts() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? '#334155' : '#f1f5f9';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
             const tasks = state.history[currentDate] || [];
             const done = tasks.filter(t => t.completed).length, total = tasks.length || 1;
             const pct = Math.round((done / total) * 100);
             const label = document.querySelector('#percentage-label span');
             if(label) label.innerText = `${pct}%`;
-            initChart('todayProgressChart', 'doughnut', [done, total - done], ['#4f46e5', '#f1f5f9']);
+            initChart('todayProgressChart', 'doughnut', [done, total - done], ['#4f46e5', isDark ? '#334155' : '#f1f5f9']);
             
             const days = [];
             for(let i=6; i>=0; i--) {
@@ -447,21 +542,17 @@
             const weekPct = weekTotal === 0 ? 0 : Math.round((weekDone / weekTotal) * 100);
             const wLabel = document.querySelector('#weekly-percentage-label span');
             if(wLabel) wLabel.innerText = `${weekPct}%`;
-            initChart('weeklyProgressChart', 'doughnut', [weekDone, weekTotal - weekDone || 1], ['#6366f1', '#f1f5f9']);
-
+            initChart('weeklyProgressChart', 'doughnut', [weekDone, weekTotal - weekDone || 1], ['#6366f1', isDark ? '#334155' : '#f1f5f9']);
             const tasksWithTime = tasks.filter(t => t.seconds > 0);
             if(tasksWithTime.length > 0) {
                 const colors = tasksWithTime.map((t, i) => taskColors[i % taskColors.length]);
                 initChart('pieChart', 'pie', tasksWithTime.map(t => t.seconds), colors, tasksWithTime.map(t => t.title));
-            } else {
-                initChart('pieChart', 'pie', [1], ['#f1f5f9'], ['データなし']);
-            }
-            
+            } else { initChart('pieChart', 'pie', [1], [isDark ? '#334155' : '#f1f5f9'], ['データなし']); }
             const barData = days.map(d => (state.history[d] || []).reduce((a, b) => a + (b.seconds || 0), 0) / 3600);
-            initChart('weeklyChart', 'bar', barData, '#6366f1', days.map(d => d.slice(5)));
+            initChart('weeklyChart', 'bar', barData, '#6366f1', days.map(d => d.slice(5)), gridColor, textColor);
         }
 
-        function initChart(id, type, data, colors, labels = []) {
+        function initChart(id, type, data, colors, labels = [], gridColor, textColor) {
             const canvas = document.getElementById(id);
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -469,16 +560,21 @@
                 charts[id].data.datasets[0].data = data;
                 charts[id].data.datasets[0].backgroundColor = colors;
                 charts[id].data.labels = labels;
+                if (type === 'bar') {
+                    charts[id].options.scales.x.grid.color = gridColor; charts[id].options.scales.y.grid.color = gridColor;
+                    charts[id].options.scales.x.ticks.color = textColor; charts[id].options.scales.y.ticks.color = textColor;
+                }
                 charts[id].update();
             } else {
                 charts[id] = new Chart(ctx, {
                     type, data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, borderRadius: type === 'bar' ? 6 : 0 }] },
                     options: { 
                         maintainAspectRatio: false, 
-                        plugins: { 
-                            legend: { display: type === 'pie', position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } 
-                        }, 
-                        scales: type === 'bar' ? { y: { beginAtZero: true } } : {} 
+                        plugins: { legend: { display: type === 'pie', position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, color: textColor || '#64748b' } } }, 
+                        scales: type === 'bar' ? { 
+                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                            x: { grid: { color: gridColor }, ticks: { color: textColor } }
+                        } : {} 
                     }
                 });
             }
@@ -497,8 +593,8 @@
             table.innerHTML = '';
             Object.entries(agg).sort((a,b) => b[1].s - a[1].s).forEach(([title, d]) => {
                 const pct = Math.round((d.c / d.a) * 100);
-                let status = pct >= 80 ? { t: 'マスター', c: 'bg-emerald-100 text-emerald-700' } : (pct < 40 ? { t: '要改善', c: 'bg-rose-100 text-rose-700' } : { t: '継続中', c: 'bg-amber-100 text-amber-700' });
-                table.innerHTML += `<tr><td class="px-6 py-4 font-bold text-slate-700">${title}</td><td class="px-6 py-4 font-mono font-bold text-indigo-500">${formatTime(d.s)}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><div class="w-16 h-1 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:${pct}%"></div></div><span class="text-[10px] font-black text-slate-400">${pct}%</span></div></td><td class="px-6 py-4"><span class="${status.c} px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">${status.t}</span></td></tr>`;
+                let status = pct >= 80 ? { t: 'マスター', c: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' } : (pct < 40 ? { t: '要改善', c: 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' } : { t: '継続中', c: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' });
+                table.innerHTML += `<tr><td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">${title}</td><td class="px-6 py-4 font-mono font-bold text-indigo-500 dark:text-indigo-400">${formatTime(d.s)}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><div class="w-16 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:${pct}%"></div></div><span class="text-[10px] font-black text-slate-400">${pct}%</span></div></td><td class="px-6 py-4"><span class="${status.c} px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">${status.t}</span></td></tr>`;
             });
         }
 
