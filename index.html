@@ -32,12 +32,11 @@
                         <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
                     <div>
-                        <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight text-shadow-sm">Study Tracker Pro</h1>
+                        <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Study Tracker Pro</h1>
                         <p id="date-display" class="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-wider font-mono"></p>
                     </div>
                 </div>
                 <div class="flex gap-2 flex-wrap items-center">
-                    <!-- JSON Sync - Restore Position -->
                     <div class="flex bg-slate-100 p-1 rounded-xl mr-2">
                         <button onclick="window.exportJSON()" class="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600">JSON書出</button>
                         <label class="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600 cursor-pointer">
@@ -45,8 +44,7 @@
                             <input type="file" accept=".json" onchange="window.importJSON(event)" class="hidden">
                         </label>
                     </div>
-                    <!-- Cloud Sync Button -->
-                    <button onclick="window.openSyncModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg flex items-center gap-2">
+                    <button id="open-sync-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                         スマホ同期
                     </button>
@@ -70,10 +68,10 @@
                     <div class="w-px h-10 bg-slate-200 mx-2"></div>
                     <div class="flex flex-col items-center">
                         <span class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">本日の合計学習</span>
-                        <div id="global-stopwatch" class="font-mono text-xl md:text-2xl font-black text-indigo-600 drop-shadow-sm">00:00:00</div>
+                        <div id="global-stopwatch" class="font-mono text-xl md:text-2xl font-black text-indigo-600">00:00:00</div>
                     </div>
                 </div>
-                <input type="date" id="date-picker" class="w-full sm:w-auto border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold outline-none bg-white focus:ring-2 focus:ring-indigo-500/20">
+                <input type="date" id="date-picker" class="w-full sm:w-auto border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold outline-none bg-white">
             </div>
         </header>
 
@@ -81,7 +79,7 @@
             <div class="lg:col-span-7 space-y-4">
                 <section class="glass-card p-4 md:p-6">
                     <div class="flex gap-2 mb-6">
-                        <input type="text" id="task-title" placeholder="新しいタスク名..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500/20">
+                        <input type="text" id="task-title" placeholder="新しいタスク名..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none">
                         <button onclick="window.addNewTask()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-sm shadow-md btn-hover">追加</button>
                     </div>
                     <div id="task-list" class="space-y-3"></div>
@@ -89,7 +87,7 @@
             </div>
 
             <div class="lg:col-span-5 flex flex-col gap-4">
-                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
+                <div class="glass-card p-4 flex flex-col items-center justify-center min-h-[160px] relative">
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">本日の進捗状況</h3>
                     <div class="relative w-28 h-28">
                         <canvas id="todayProgressChart"></canvas>
@@ -107,7 +105,6 @@
             </div>
         </div>
 
-        <!-- Weekly Graph and Analysis Table (Kept original order) -->
         <section class="glass-card p-4 md:p-6">
             <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">週間学習ログ</h3>
             <div class="h-48 md:h-64">
@@ -121,13 +118,8 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left min-w-[600px]">
-                    <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <tr>
-                            <th class="px-6 py-4">学習項目</th>
-                            <th class="px-6 py-4">累計時間</th>
-                            <th class="px-6 py-4">達成度</th>
-                            <th class="px-6 py-4">評価</th>
-                        </tr>
+                    <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase">
+                        <tr><th class="px-6 py-4">学習項目</th><th class="px-6 py-4">累計時間</th><th class="px-6 py-4">達成度</th><th class="px-6 py-4">評価</th></tr>
                     </thead>
                     <tbody id="analysis-table" class="divide-y divide-slate-100 text-sm"></tbody>
                 </table>
@@ -136,23 +128,23 @@
     </div>
 
     <!-- Sync Modal -->
-    <div id="sync-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay hidden px-4">
-        <div class="bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl space-y-6">
+    <div id="sync-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay hidden">
+        <div class="bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl space-y-6 mx-4">
             <div class="text-center">
                 <h2 class="text-2xl font-black text-slate-800">スマホ同期設定</h2>
-                <p class="text-xs text-slate-500 font-bold mt-1 uppercase tracking-widest">Cloud Sync</p>
+                <p class="text-xs text-slate-500 font-bold mt-1 uppercase">Cloud Sync</p>
             </div>
             
-            <div id="qr-container" class="flex flex-col items-center bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-200">
+            <div class="flex flex-col items-center bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-200">
                 <div id="qrcode" class="bg-white p-2 rounded-xl shadow-inner mb-4 min-h-[140px] flex items-center justify-center"></div>
-                <p class="text-[10px] text-slate-400 font-bold uppercase text-center">このQRをスマホでスキャンして<br>同じキーでアクセス</p>
+                <p class="text-[10px] text-slate-400 font-bold uppercase text-center">このQRをスマホでスキャンしてアクセス</p>
             </div>
 
             <div class="space-y-4">
                 <div>
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">共有キー (合言葉)</label>
                     <div class="flex gap-2">
-                        <input type="text" id="sync-key" class="flex-1 font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-500/10 uppercase" placeholder="例: STUDY123">
+                        <input type="text" id="sync-key" class="flex-1 font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none uppercase" placeholder="例: MYSTUDY">
                         <button onclick="window.generateRandomKey()" class="bg-slate-100 p-3 rounded-xl hover:bg-slate-200">🎲</button>
                     </div>
                 </div>
@@ -176,40 +168,27 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'study-tracker-sync-v1';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'study-sync-final';
 
-        const STORAGE_KEY = 'learning_tracker_data_v5';
+        const STORAGE_KEY = 'learning_tracker_v5_final';
         let currentDate = new Date().toLocaleDateString('sv-SE');
-        let state = {
-            history: JSON.parse(localStorage.getItem(STORAGE_KEY)) || {},
-            user: null
-        };
+        let state = { history: JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}, user: null };
+        let charts = {}, timerInterval, timeLeft = 25 * 60, isTimerRunning = false, activeTaskId = null;
 
-        let charts = {};
-        let timerInterval, timeLeft = 25 * 60, isTimerRunning = false, activeTaskId = null;
-
-        // Firebase Auth & Init
         const initApp = async () => {
-            const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInAnonymously(auth); 
-                } else {
-                    await signInAnonymously(auth);
-                }
-            };
-            await initAuth();
+            await signInAnonymously(auth);
             onAuthStateChanged(auth, (user) => { state.user = user; });
 
-            const picker = document.getElementById('date-picker');
-            picker.value = currentDate;
-            picker.addEventListener('change', (e) => {
+            document.getElementById('date-picker').value = currentDate;
+            document.getElementById('date-picker').addEventListener('change', (e) => {
                 window.stopTimer();
                 currentDate = e.target.value;
                 window.initDayData();
                 window.refreshUI();
             });
 
-            // Handle QR key from URL
+            document.getElementById('open-sync-btn').onclick = window.openSyncModal;
+
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('key')) {
                 document.getElementById('sync-key').value = urlParams.get('key').toUpperCase();
@@ -225,45 +204,43 @@
             }, 1000);
         };
 
-        // --- JSON Functions ---
-        window.exportJSON = () => {
-            const data = { history: state.history, savedAt: new Date().toISOString() };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `study_backup_${currentDate}.json`;
-            a.click();
+        window.openSyncModal = () => {
+            const modal = document.getElementById('sync-modal');
+            modal.classList.remove('hidden');
+            window.updateQRCode();
         };
 
-        window.importJSON = (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => {
-                try {
-                    const parsed = JSON.parse(reader.result);
-                    state.history = parsed.history || parsed;
-                    window.saveToLocal();
-                    window.refreshUI();
-                    alert("JSONを読み込みました");
-                } catch { alert("形式が違います"); }
-            };
-            reader.readAsText(file);
+        window.closeSyncModal = () => {
+            document.getElementById('sync-modal').classList.add('hidden');
         };
 
-        // --- Cloud Sync Functions ---
+        window.updateQRCode = () => {
+            const key = document.getElementById('sync-key').value.trim().toUpperCase();
+            if (!key) return;
+            try {
+                const url = new URL(window.location.href.split('?')[0]);
+                url.searchParams.set('key', key);
+                const qr = qrcode(0, 'M');
+                qr.addData(url.toString());
+                qr.make();
+                document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
+            } catch (e) { console.error("QR Error", e); }
+        };
+
+        window.generateRandomKey = () => {
+            document.getElementById('sync-key').value = Math.random().toString(36).substring(2, 8).toUpperCase();
+            window.updateQRCode();
+        };
+
         window.uploadToCloud = async () => {
             const key = document.getElementById('sync-key').value.trim().toUpperCase();
             if (!key || !state.user) return alert("合言葉を入力してください");
             const btn = document.getElementById('cloud-upload-btn');
             btn.innerText = "保存中..."; btn.disabled = true;
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', key), {
-                    history: state.history,
-                    updatedAt: new Date().toISOString()
-                });
-                alert("クラウドに保存しました。");
-            } catch (e) { alert("保存エラーが発生しました。"); }
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', key), { history: state.history, updatedAt: new Date().toISOString() });
+                alert("クラウドに保存完了しました");
+            } catch (e) { alert("保存に失敗しました"); }
             finally { btn.innerText = "クラウドへ保存"; btn.disabled = false; }
         };
 
@@ -276,56 +253,58 @@
                 const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', key));
                 if (snap.exists()) {
                     state.history = snap.data().history;
-                    window.saveToLocal();
-                    window.refreshUI();
-                    alert("同期が完了しました。");
+                    window.saveToLocal(); window.refreshUI();
+                    alert("同期が完了しました");
                     window.closeSyncModal();
-                } else { alert("データが見つかりません。"); }
-            } catch (e) { alert("読込エラーが発生しました。"); }
+                } else { alert("データが見つかりません"); }
+            } catch (e) { alert("読込に失敗しました"); }
             finally { btn.innerText = "読込（同期）"; btn.disabled = false; }
         };
 
-        // --- Core Logic ---
+        window.exportJSON = () => {
+            const blob = new Blob([JSON.stringify(state.history, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `study_data_${currentDate}.json`;
+            a.click();
+        };
+
+        window.importJSON = (e) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                state.history = JSON.parse(reader.result);
+                window.saveToLocal(); window.refreshUI();
+                alert("読み込み完了");
+            };
+            reader.readAsText(e.target.files[0]);
+        };
+
         window.initDayData = () => {
             if (!state.history[currentDate]) {
                 const dates = Object.keys(state.history).sort();
                 const last = dates.filter(d => d < currentDate).pop();
-                state.history[currentDate] = last ? state.history[last].map(t => ({...t, seconds:0, completed:false})) : [];
+                state.history[currentDate] = last ? state.history[last].map(t => ({...t, seconds: 0, completed: false})) : [];
                 window.saveToLocal();
             }
         };
 
         window.saveToLocal = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+        window.refreshUI = () => { window.renderTasks(); window.updateCharts(); window.renderAnalysis(); document.getElementById('date-display').innerText = currentDate; };
         
-        window.refreshUI = () => {
-            window.renderTasks();
-            window.updateCharts();
-            window.renderAnalysis();
-            document.getElementById('date-display').innerText = currentDate;
-        };
-
         window.addNewTask = () => {
             const title = document.getElementById('task-title').value.trim();
             if (!title) return;
             state.history[currentDate].push({ title, seconds: 0, completed: false });
-            document.getElementById('task-title').value = '';
-            window.saveToLocal(); window.refreshUI();
+            document.getElementById('task-title').value = ''; window.saveToLocal(); window.refreshUI();
         };
 
         window.renderTasks = () => {
-            const list = document.getElementById('task-list');
-            list.innerHTML = '';
+            const list = document.getElementById('task-list'); list.innerHTML = '';
             (state.history[currentDate] || []).forEach(task => {
                 const isAct = activeTaskId === task.title;
                 const div = document.createElement('div');
-                div.className = `flex items-center gap-2 p-3 rounded-2xl border transition-all ${isAct ? 'active-timer shadow-md' : 'bg-white border-slate-200'} ${task.completed ? 'opacity-50' : ''}`;
-                div.innerHTML = `
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="window.toggleTask('${task.title}')" class="w-5 h-5 accent-indigo-600 rounded-lg">
-                    <div class="flex-1 truncate font-bold text-slate-700 text-sm ${task.completed ? 'line-through' : ''}">${task.title}</div>
-                    <div class="font-mono text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md">${window.formatTime(task.seconds)}</div>
-                    <button onclick="window.setActive('${task.title}')" class="p-2 ${isAct ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} rounded-lg">▶</button>
-                    <button onclick="window.deleteTask('${task.title}')" class="p-2 text-slate-300 hover:text-rose-500">✕</button>
-                `;
+                div.className = `flex items-center gap-2 p-3 rounded-2xl border ${isAct ? 'active-timer shadow-md' : 'bg-white border-slate-200'} ${task.completed ? 'opacity-50' : ''}`;
+                div.innerHTML = `<input type="checkbox" ${task.completed ? 'checked' : ''} onchange="window.toggleTask('${task.title}')" class="w-5 h-5 accent-indigo-600 rounded-lg"><div class="flex-1 truncate font-bold text-slate-700 text-sm ${task.completed ? 'line-through' : ''}">${task.title}</div><div class="font-mono text-[10px] font-bold text-indigo-500">${window.formatTime(task.seconds)}</div><button onclick="window.setActive('${task.title}')" class="p-2 ${isAct ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} rounded-lg">▶</button><button onclick="window.deleteTask('${task.title}')" class="p-2 text-slate-300 hover:text-rose-500">✕</button>`;
                 list.appendChild(div);
             });
         };
@@ -333,40 +312,12 @@
         window.setActive = (t) => { activeTaskId = t; window.refreshUI(); };
         window.toggleTask = (t) => { state.history[currentDate].forEach(x => { if(x.title === t) x.completed = !x.completed; }); window.saveToLocal(); window.refreshUI(); };
         window.deleteTask = (t) => { state.history[currentDate] = state.history[currentDate].filter(x => x.title !== t); window.saveToLocal(); window.refreshUI(); };
-
         window.toggleGlobalTimer = () => { if (!activeTaskId) return; isTimerRunning ? window.stopTimer() : window.startTimer(); };
-        
-        window.startTimer = () => {
-            if (isTimerRunning) return;
-            isTimerRunning = true;
-            timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    const t = state.history[currentDate].find(x => x.title === activeTaskId);
-                    if (t) t.seconds++;
-                    window.updateTimerUI();
-                } else { window.stopTimer(); }
-            }, 1000);
-            window.updateTimerButton();
-        };
-
+        window.startTimer = () => { isTimerRunning = true; timerInterval = setInterval(() => { if (timeLeft > 0) { timeLeft--; const t = state.history[currentDate].find(x => x.title === activeTaskId); if (t) t.seconds++; window.updateTimerUI(); } else { window.stopTimer(); } }, 1000); window.updateTimerButton(); };
         window.stopTimer = () => { clearInterval(timerInterval); isTimerRunning = false; window.updateTimerButton(); window.saveToLocal(); };
-        
-        window.updateTimerUI = () => {
-            document.getElementById('global-countdown').innerText = String(timeLeft % 60).padStart(2, '0');
-            window.refreshUI();
-        };
-
-        window.updateTimerButton = () => {
-            document.getElementById('timer-btn').innerHTML = isTimerRunning ? 
-                `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a1 1 0 00-1 1v10a1 1 0 001 1h3a1 1 0 001-1V5a1 1 0 00-1-1H5zm7 0a1 1 0 00-1 1v10a1 1 0 001 1h3a1 1 0 001-1V5a1 1 0 00-1-1h-3z"/></svg>` : 
-                `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>`;
-        };
-
-        window.formatTime = (sec) => {
-            const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-            return [h, m, s].map(v => String(v).padStart(2, '0')).join(":");
-        };
+        window.updateTimerUI = () => { document.getElementById('global-countdown').innerText = String(timeLeft % 60).padStart(2, '0'); window.refreshUI(); };
+        window.updateTimerButton = () => { document.getElementById('timer-btn').innerHTML = isTimerRunning ? '■' : '▶'; };
+        window.formatTime = (sec) => { const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60; return [h, m, s].map(v => String(v).padStart(2, '0')).join(":"); };
 
         window.updateCharts = () => {
             const tasks = state.history[currentDate] || [];
@@ -374,10 +325,8 @@
             const pct = Math.round((done / total) * 100);
             document.querySelector('#percentage-label span').innerText = `${pct}%`;
             window.initChart('todayProgressChart', 'doughnut', [done, total - done], ['#4f46e5', '#f1f5f9']);
-
             const tasksWithTime = tasks.filter(t => t.seconds > 0);
             window.initChart('pieChart', 'pie', tasksWithTime.length ? tasksWithTime.map(t => t.seconds) : [1], tasksWithTime.length ? ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] : ['#f1f5f9'], tasksWithTime.map(t => t.title));
-
             const days = []; for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d.toLocaleDateString('sv-SE')); }
             const barData = days.map(d => (state.history[d] || []).reduce((a, b) => a + b.seconds, 0) / 3600);
             window.initChart('weeklyChart', 'bar', barData, '#6366f1', days.map(d => d.slice(5)));
@@ -398,23 +347,10 @@
             });
         };
 
-        window.openSyncModal = () => { document.getElementById('sync-modal').classList.remove('hidden'); window.updateQRCode(); };
-        window.closeSyncModal = () => document.getElementById('sync-modal').classList.add('hidden');
-        window.generateRandomKey = () => { document.getElementById('sync-key').value = Math.random().toString(36).substring(2, 8).toUpperCase(); window.updateQRCode(); };
-        window.updateQRCode = () => {
-            const key = document.getElementById('sync-key').value.trim();
-            if (!key) return;
-            const url = new URL(window.location.href.split('?')[0]); url.searchParams.set('key', key);
-            const qr = qrcode(0, 'M'); qr.addData(url.toString()); qr.make();
-            document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
-        };
-
         window.exportAsHtml = () => {
             const docClone = new DOMParser().parseFromString(document.documentElement.outerHTML, 'text/html');
             docClone.getElementById('embedded-data').textContent = JSON.stringify(state.history);
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob(["<!DOCTYPE html>\n" + docClone.documentElement.outerHTML], { type: 'text/html' }));
-            a.download = `StudyTracker_Backup.html`; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(["<!DOCTYPE html>\n" + docClone.documentElement.outerHTML], { type: 'text/html' })); a.download = `StudyTracker_Backup.html`; a.click();
         };
 
         initApp();
