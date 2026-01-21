@@ -29,7 +29,7 @@
             <div class="flex flex-wrap justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="bg-indigo-600 p-2 md:p-3 rounded-xl shadow-lg">
-                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-4.5 1.253"></path></svg>
                     </div>
                     <div>
                         <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Study Tracker Pro</h1>
@@ -38,17 +38,17 @@
                 </div>
                 <div class="flex gap-2 flex-wrap items-center">
                     <div class="flex bg-slate-100 p-1 rounded-xl mr-2">
-                        <button onclick="window.exportJSON()" class="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600">JSON書出</button>
+                        <button onclick="exportJSON()" class="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600">JSON書出</button>
                         <label class="px-3 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600 cursor-pointer">
                             JSON読込
-                            <input type="file" accept=".json" onchange="window.importJSON(event)" class="hidden">
+                            <input type="file" accept=".json" onchange="importJSON(event)" class="hidden">
                         </label>
                     </div>
-                    <button id="open-sync-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg flex items-center gap-2">
+                    <button onclick="openSyncModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                         スマホ同期
                     </button>
-                    <button onclick="window.exportAsHtml()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg">HTML保存</button>
+                    <button onclick="exportAsHtml()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold btn-hover shadow-lg">HTML保存</button>
                 </div>
             </div>
 
@@ -60,8 +60,8 @@
                             <input type="number" id="timer-minutes-input" value="25" min="1" class="w-12 bg-transparent text-lg font-bold text-slate-700 outline-none text-center">
                             <span class="text-slate-300 font-bold">:</span>
                             <span id="global-countdown" class="font-mono text-xl font-bold text-slate-700 w-8 text-center">00</span>
-                            <button onclick="window.toggleGlobalTimer()" id="timer-btn" class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg btn-hover ml-1">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>
+                            <button onclick="toggleGlobalTimer()" id="timer-btn" class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg btn-hover ml-1">
+                                <svg id="timer-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/></svg>
                             </button>
                         </div>
                     </div>
@@ -80,7 +80,7 @@
                 <section class="glass-card p-4 md:p-6">
                     <div class="flex gap-2 mb-6">
                         <input type="text" id="task-title" placeholder="新しいタスク名..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none">
-                        <button onclick="window.addNewTask()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-sm shadow-md btn-hover">追加</button>
+                        <button onclick="addNewTask()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-sm shadow-md btn-hover">追加</button>
                     </div>
                     <div id="task-list" class="space-y-3"></div>
                 </section>
@@ -144,18 +144,18 @@
                 <div>
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">共有キー (合言葉)</label>
                     <div class="flex gap-2">
-                        <input type="text" id="sync-key" class="flex-1 font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none uppercase" placeholder="例: MYSTUDY">
-                        <button onclick="window.generateRandomKey()" class="bg-slate-100 p-3 rounded-xl hover:bg-slate-200">🎲</button>
+                        <input type="text" id="sync-key" class="flex-1 font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none uppercase" placeholder="例: MYSTUDY" oninput="updateQRCode()">
+                        <button onclick="generateRandomKey()" class="bg-slate-100 p-3 rounded-xl hover:bg-slate-200">🎲</button>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3">
-                    <button id="cloud-upload-btn" onclick="window.uploadToCloud()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg btn-hover text-sm">クラウドへ保存</button>
-                    <button id="cloud-download-btn" onclick="window.downloadFromCloud()" class="bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg btn-hover text-sm">読込（同期）</button>
+                    <button id="cloud-upload-btn" onclick="uploadToCloud()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg btn-hover text-sm">クラウドへ保存</button>
+                    <button id="cloud-download-btn" onclick="downloadFromCloud()" class="bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg btn-hover text-sm">読込（同期）</button>
                 </div>
             </div>
             
-            <button onclick="window.closeSyncModal()" class="w-full text-slate-400 font-bold py-2 text-sm">閉じる</button>
+            <button onclick="closeSyncModal()" class="w-full text-slate-400 font-bold py-2 text-sm">閉じる</button>
         </div>
     </div>
 
@@ -168,45 +168,16 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'study-sync-final';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'study-tracker-v5';
 
         const STORAGE_KEY = 'learning_tracker_v5_final';
         let currentDate = new Date().toLocaleDateString('sv-SE');
         let state = { history: JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}, user: null };
         let charts = {}, timerInterval, timeLeft = 25 * 60, isTimerRunning = false, activeTaskId = null;
 
-        const initApp = async () => {
-            await signInAnonymously(auth);
-            onAuthStateChanged(auth, (user) => { state.user = user; });
-
-            document.getElementById('date-picker').value = currentDate;
-            document.getElementById('date-picker').addEventListener('change', (e) => {
-                window.stopTimer();
-                currentDate = e.target.value;
-                window.initDayData();
-                window.refreshUI();
-            });
-
-            document.getElementById('open-sync-btn').onclick = window.openSyncModal;
-
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('key')) {
-                document.getElementById('sync-key').value = urlParams.get('key').toUpperCase();
-                window.openSyncModal();
-            }
-
-            window.initDayData();
-            window.refreshUI();
-            
-            setInterval(() => {
-                const total = (state.history[currentDate] || []).reduce((a, t) => a + (t.seconds || 0), 0);
-                document.getElementById('global-stopwatch').innerText = window.formatTime(total);
-            }, 1000);
-        };
-
+        // グローバル関数として公開
         window.openSyncModal = () => {
-            const modal = document.getElementById('sync-modal');
-            modal.classList.remove('hidden');
+            document.getElementById('sync-modal').classList.remove('hidden');
             window.updateQRCode();
         };
 
@@ -215,7 +186,8 @@
         };
 
         window.updateQRCode = () => {
-            const key = document.getElementById('sync-key').value.trim().toUpperCase();
+            const keyInput = document.getElementById('sync-key');
+            const key = keyInput.value.trim().toUpperCase();
             if (!key) return;
             try {
                 const url = new URL(window.location.href.split('?')[0]);
@@ -238,7 +210,10 @@
             const btn = document.getElementById('cloud-upload-btn');
             btn.innerText = "保存中..."; btn.disabled = true;
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', key), { history: state.history, updatedAt: new Date().toISOString() });
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', key), { 
+                    history: state.history, 
+                    updatedAt: new Date().toISOString() 
+                });
                 alert("クラウドに保存完了しました");
             } catch (e) { alert("保存に失敗しました"); }
             finally { btn.innerText = "クラウドへ保存"; btn.disabled = false; }
@@ -253,7 +228,8 @@
                 const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', key));
                 if (snap.exists()) {
                     state.history = snap.data().history;
-                    window.saveToLocal(); window.refreshUI();
+                    window.saveToLocal(); 
+                    window.refreshUI();
                     alert("同期が完了しました");
                     window.closeSyncModal();
                 } else { alert("データが見つかりません"); }
@@ -272,12 +248,92 @@
         window.importJSON = (e) => {
             const reader = new FileReader();
             reader.onload = () => {
-                state.history = JSON.parse(reader.result);
-                window.saveToLocal(); window.refreshUI();
-                alert("読み込み完了");
+                try {
+                    const data = JSON.parse(reader.result);
+                    state.history = data.history || data;
+                    window.saveToLocal(); window.refreshUI();
+                    alert("読み込み完了");
+                } catch(err) { alert("形式が正しくありません"); }
             };
-            reader.readAsText(e.target.files[0]);
+            if(e.target.files[0]) reader.readAsText(e.target.files[0]);
         };
+
+        window.addNewTask = () => {
+            const input = document.getElementById('task-title');
+            const title = input.value.trim();
+            if (!title) return;
+            if(!state.history[currentDate]) state.history[currentDate] = [];
+            state.history[currentDate].push({ title, seconds: 0, completed: false });
+            input.value = ''; window.saveToLocal(); window.refreshUI();
+        };
+
+        window.toggleTask = (t) => {
+            state.history[currentDate].forEach(x => { if(x.title === t) x.completed = !x.completed; });
+            window.saveToLocal(); window.refreshUI();
+        };
+
+        window.deleteTask = (t) => {
+            state.history[currentDate] = state.history[currentDate].filter(x => x.title !== t);
+            window.saveToLocal(); window.refreshUI();
+        };
+
+        window.setActive = (t) => {
+            activeTaskId = (activeTaskId === t) ? null : t;
+            window.refreshUI();
+        };
+
+        window.toggleGlobalTimer = () => {
+            if (!activeTaskId) return alert("タスクを選択（▶ボタン）してください");
+            isTimerRunning ? window.stopTimer() : window.startTimer();
+        };
+
+        window.startTimer = () => {
+            isTimerRunning = true;
+            const inputMin = document.getElementById('timer-minutes-input').value;
+            if(!timerInterval) timeLeft = parseInt(inputMin) * 60;
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    const t = state.history[currentDate].find(x => x.title === activeTaskId);
+                    if (t) t.seconds++;
+                    window.updateTimerUI();
+                } else {
+                    window.stopTimer();
+                    alert("タイムアップ！");
+                }
+            }, 1000);
+            window.updateTimerButton();
+        };
+
+        window.stopTimer = () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isTimerRunning = false;
+            window.updateTimerButton();
+            window.saveToLocal();
+        };
+
+        window.updateTimerUI = () => {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            document.getElementById('timer-minutes-input').value = m;
+            document.getElementById('global-countdown').innerText = String(s).padStart(2, '0');
+            window.refreshUI();
+        };
+
+        window.updateTimerButton = () => {
+            document.getElementById('timer-icon').innerHTML = isTimerRunning 
+                ? '<rect x="6" y="6" width="8" height="8" fill="currentColor" />' 
+                : '<path d="M4.5 3a.5.5 0 00-.5.5v13a.5.5 0 00.757.429l11-6.5a.5.5 0 000-.858l-11-6.5A.5.5 0 004.5 3z"/>';
+        };
+
+        window.formatTime = (sec) => {
+            const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+            return [h, m, s].map(v => String(v).padStart(2, '0')).join(":");
+        };
+
+        window.saveToLocal = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
 
         window.initDayData = () => {
             if (!state.history[currentDate]) {
@@ -288,14 +344,11 @@
             }
         };
 
-        window.saveToLocal = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
-        window.refreshUI = () => { window.renderTasks(); window.updateCharts(); window.renderAnalysis(); document.getElementById('date-display').innerText = currentDate; };
-        
-        window.addNewTask = () => {
-            const title = document.getElementById('task-title').value.trim();
-            if (!title) return;
-            state.history[currentDate].push({ title, seconds: 0, completed: false });
-            document.getElementById('task-title').value = ''; window.saveToLocal(); window.refreshUI();
+        window.refreshUI = () => {
+            window.renderTasks();
+            window.updateCharts();
+            window.renderAnalysis();
+            document.getElementById('date-display').innerText = currentDate;
         };
 
         window.renderTasks = () => {
@@ -304,20 +357,17 @@
                 const isAct = activeTaskId === task.title;
                 const div = document.createElement('div');
                 div.className = `flex items-center gap-2 p-3 rounded-2xl border ${isAct ? 'active-timer shadow-md' : 'bg-white border-slate-200'} ${task.completed ? 'opacity-50' : ''}`;
-                div.innerHTML = `<input type="checkbox" ${task.completed ? 'checked' : ''} onchange="window.toggleTask('${task.title}')" class="w-5 h-5 accent-indigo-600 rounded-lg"><div class="flex-1 truncate font-bold text-slate-700 text-sm ${task.completed ? 'line-through' : ''}">${task.title}</div><div class="font-mono text-[10px] font-bold text-indigo-500">${window.formatTime(task.seconds)}</div><button onclick="window.setActive('${task.title}')" class="p-2 ${isAct ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} rounded-lg">▶</button><button onclick="window.deleteTask('${task.title}')" class="p-2 text-slate-300 hover:text-rose-500">✕</button>`;
+                div.innerHTML = `
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.title}')" class="w-5 h-5 accent-indigo-600 rounded-lg">
+                    <div class="flex-1 truncate font-bold text-slate-700 text-sm ${task.completed ? 'line-through' : ''}">${task.title}</div>
+                    <div class="font-mono text-[10px] font-bold text-indigo-500">${window.formatTime(task.seconds)}</div>
+                    <button onclick="setActive('${task.title}')" class="p-2 ${isAct ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'} rounded-lg">▶</button>
+                    <button onclick="deleteTask('${task.title}')" class="p-2 text-slate-300 hover:text-rose-500">✕</button>`;
                 list.appendChild(div);
             });
+            const total = (state.history[currentDate] || []).reduce((a, t) => a + t.seconds, 0);
+            document.getElementById('global-stopwatch').innerText = window.formatTime(total);
         };
-
-        window.setActive = (t) => { activeTaskId = t; window.refreshUI(); };
-        window.toggleTask = (t) => { state.history[currentDate].forEach(x => { if(x.title === t) x.completed = !x.completed; }); window.saveToLocal(); window.refreshUI(); };
-        window.deleteTask = (t) => { state.history[currentDate] = state.history[currentDate].filter(x => x.title !== t); window.saveToLocal(); window.refreshUI(); };
-        window.toggleGlobalTimer = () => { if (!activeTaskId) return; isTimerRunning ? window.stopTimer() : window.startTimer(); };
-        window.startTimer = () => { isTimerRunning = true; timerInterval = setInterval(() => { if (timeLeft > 0) { timeLeft--; const t = state.history[currentDate].find(x => x.title === activeTaskId); if (t) t.seconds++; window.updateTimerUI(); } else { window.stopTimer(); } }, 1000); window.updateTimerButton(); };
-        window.stopTimer = () => { clearInterval(timerInterval); isTimerRunning = false; window.updateTimerButton(); window.saveToLocal(); };
-        window.updateTimerUI = () => { document.getElementById('global-countdown').innerText = String(timeLeft % 60).padStart(2, '0'); window.refreshUI(); };
-        window.updateTimerButton = () => { document.getElementById('timer-btn').innerHTML = isTimerRunning ? '■' : '▶'; };
-        window.formatTime = (sec) => { const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60; return [h, m, s].map(v => String(v).padStart(2, '0')).join(":"); };
 
         window.updateCharts = () => {
             const tasks = state.history[currentDate] || [];
@@ -325,16 +375,27 @@
             const pct = Math.round((done / total) * 100);
             document.querySelector('#percentage-label span').innerText = `${pct}%`;
             window.initChart('todayProgressChart', 'doughnut', [done, total - done], ['#4f46e5', '#f1f5f9']);
+            
             const tasksWithTime = tasks.filter(t => t.seconds > 0);
             window.initChart('pieChart', 'pie', tasksWithTime.length ? tasksWithTime.map(t => t.seconds) : [1], tasksWithTime.length ? ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] : ['#f1f5f9'], tasksWithTime.map(t => t.title));
+            
             const days = []; for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d.toLocaleDateString('sv-SE')); }
             const barData = days.map(d => (state.history[d] || []).reduce((a, b) => a + b.seconds, 0) / 3600);
             window.initChart('weeklyChart', 'bar', barData, '#6366f1', days.map(d => d.slice(5)));
         };
 
         window.initChart = (id, type, data, colors, labels = []) => {
-            if (charts[id]) { charts[id].data.datasets[0].data = data; charts[id].data.labels = labels; charts[id].update(); }
-            else { charts[id] = new Chart(document.getElementById(id), { type, data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, borderRadius: 4 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: type === 'pie', position: 'bottom' } } } }); }
+            if (charts[id]) { 
+                charts[id].data.datasets[0].data = data; 
+                charts[id].data.labels = labels; 
+                charts[id].update(); 
+            } else { 
+                charts[id] = new Chart(document.getElementById(id), { 
+                    type, 
+                    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, borderRadius: 4 }] }, 
+                    options: { maintainAspectRatio: false, plugins: { legend: { display: type === 'pie', position: 'bottom' } } } 
+                }); 
+            }
         };
 
         window.renderAnalysis = () => {
@@ -353,7 +414,29 @@
             const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(["<!DOCTYPE html>\n" + docClone.documentElement.outerHTML], { type: 'text/html' })); a.download = `StudyTracker_Backup.html`; a.click();
         };
 
-        initApp();
+        // 初期化実行
+        const init = async () => {
+            await signInAnonymously(auth);
+            onAuthStateChanged(auth, (user) => { state.user = user; });
+
+            document.getElementById('date-picker').value = currentDate;
+            document.getElementById('date-picker').addEventListener('change', (e) => {
+                window.stopTimer();
+                currentDate = e.target.value;
+                window.initDayData();
+                window.refreshUI();
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('key')) {
+                document.getElementById('sync-key').value = urlParams.get('key').toUpperCase();
+                window.openSyncModal();
+            }
+
+            window.initDayData();
+            window.refreshUI();
+        };
+        init();
     </script>
 </body>
 </html>
